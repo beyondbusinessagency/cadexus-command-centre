@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Centre OS — Cadexus / PlanDepa</title>
+<style>
+  :root {
+    --bg: #0b0b0c;
+    --sidebar: #121214;
+    --surface: #1a1a1c;
+    --surface-2: #242426;
+    --ink: #f4f2ee;
+    --muted: #9a9790;
+    --accent: #cf1322;
+    --accent-hover: #e8273a;
+    --border: #2a2a2c;
+    --good: #34d399;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+  }
+  .sidebar {
+    width: 230px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    flex-shrink: 0;
+  }
+  .logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .logo h1 { font-size: 17px; font-weight: 600; }
+  .logo span { font-size: 11px; color: var(--muted); }
+  nav button {
+    width: 100%; text-align: left; background: none; border: none;
+    color: var(--muted); padding: 11px 20px; font-size: 13.5px; cursor: pointer;
+  }
+  nav button.active, nav button:hover { background: var(--surface); color: var(--ink); }
+  nav button.active { border-left: 3px solid var(--accent); padding-left: 17px; }
+  .main { flex: 1; padding: 28px 36px; overflow-y: auto; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; }
+  .header h2 { font-size: 24px; font-weight: 600; }
+  .header .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .metric .value { font-size: 28px; font-weight: 600; }
+  .metric .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 15px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .status.new { background: #1e3a5f; color: #93c5fd; }
+  .status.qualified { background: #1e3a2f; color: #86efac; }
+  .status.demo { background: #3a2e1e; color: #fcd34d; }
+  .status.proposal { background: #3a1e2e; color: #f9a8d4; }
+  .status.won { background: #14532d; color: #4ade80; }
+  .status.lost { background: #450a0a; color: #fca5a5; }
+  .status.onboarding { background: #1e293b; color: #7dd3fc; }
+  .status.active { background: #14532d; color: #4ade80; }
+  .status.risk { background: #451a03; color: #fdba74; }
+  button.primary { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
+  button.primary:hover { background: var(--accent-hover); }
+  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--ink); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  input, select, textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+  textarea { min-height: 64px; resize: vertical; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .empty { color: var(--muted); text-align: center; padding: 32px 0; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .note-item { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .note-item .time { color: var(--muted); font-size: 11px; }
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); align-items: center; justify-content: center; z-index: 100; }
+  .modal.open { display: flex; }
+  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 500px; max-width: 92vw; max-height: 90vh; overflow-y: auto; }
+  .modal-content h3 { margin-bottom: 16px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  @media (max-width: 800px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    nav { display: flex; overflow-x: auto; }
+    nav button { white-space: nowrap; padding: 8px 16px; }
+    .main { padding: 16px; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>Command Centre</h1>
+      <span>Cadexus / PlanDepa OS</span>
+    </div>
+    <nav>
+      <button class="active" data-view="dashboard">Dashboard</button>
+      <button data-view="pipeline">Pipeline</button>
+      <button data-view="customers">Customers</button>
+      <button data-view="notes">Decisions</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="view active" id="dashboard">
+      <div class="header">
+        <div>
+          <h2>Dashboard</h2>
+          <div class="sub">Internal operating view — founder / ops</div>
+        </div>
+        <div class="toolbar">
+          <button class="secondary" onclick="exportCSV('leads')">Export leads</button>
+          <button class="secondary" onclick="exportCSV('customers')">Export customers</button>
+          <button class="primary" onclick="openModal('lead')">+ New lead</button>
+        </div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div class="card">
+        <h3>Open next actions</h3>
+        <div id="next-actions"></div>
+      </div>
+    </section>
+
+    <section class="view" id="pipeline">
+      <div class="header">
+        <div>
+          <h2>Pipeline</h2>
+          <div class="sub">Leads and opportunities</div>
+        </div>
+        <div class="toolbar">
+          <button class="secondary" onclick="exportCSV('leads')">Export CSV</button>
+          <button class="primary" onclick="openModal('lead')">+ Add lead</button>
+        </div>
+      </div>
+      <div class="card" style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Company</th><th>Source</th><th>Segment</th><th>Stage</th><th>Next action</th><th></th></tr></thead>
+          <tbody id="pipeline-body"></tbody>
+        </table>
+        <div class="empty" id="pipeline-empty">No leads yet.</div>
+      </div>
+    </section>
+
+    <section class="view" id="customers">
+      <div class="header">
+        <div>
+          <h2>Customers</h2>
+          <div class="sub">Onboarding, active and at-risk</div>
+        </div>
+        <div class="toolbar">
+          <button class="secondary" onclick="exportCSV('customers')">Export CSV</button>
+          <button class="primary" onclick="openModal('customer')">+ Add customer</button>
+        </div>
+      </div>
+      <div class="card" style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Company</th><th>Status</th><th>First value</th><th>Org ID</th><th>Risks</th><th></th></tr></thead>
+          <tbody id="customers-body"></tbody>
+        </table>
+        <div class="empty" id="customers-empty">No customers tracked.</div>
+      </div>
+    </section>
+
+    <section class="view" id="notes">
+      <div class="header">
+        <div>
+          <h2>Decisions & Notes</h2>
+          <div class="sub">What was decided or tested</div>
+        </div>
+      </div>
+      <div class="card">
+        <form id="note-form">
+          <textarea id="note-input" placeholder="Decision, experiment result, follow-up rule..." required></textarea>
+          <button class="primary" type="submit">Save note</button>
+        </form>
+        <div id="notes-list" style="margin-top:16px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal-lead">
+    <div class="modal-content">
+      <h3 id="lead-modal-title">Add lead</h3>
+      <form id="lead-form">
+        <input type="hidden" id="l-edit-index">
+        <input type="text" id="l-name" placeholder="Company / name" required>
+        <div class="form-grid">
+          <select id="l-source"><option>Referral</option><option>PlanDepa site</option><option>Cadexus site</option><option>LinkedIn</option><option>Outbound</option><option>Other</option></select>
+          <select id="l-segment"><option>10–50 staff builder</option><option>Trade contractor</option><option>Small residential</option><option>Other</option></select>
+        </div>
+        <select id="l-stage">
+          <option value="new">New</option><option value="qualified">Qualified</option><option value="demo">Demo</option>
+          <option value="proposal">Proposal / Blueprint</option><option value="won">Won</option><option value="lost">Lost</option>
+        </select>
+        <input type="text" id="l-next" placeholder="Next action and date">
+        <textarea id="l-notes" placeholder="Notes"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="primary" type="submit">Save</button>
+          <button class="secondary" type="button" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-customer">
+    <div class="modal-content">
+      <h3 id="cust-modal-title">Add customer</h3>
+      <form id="customer-form">
+        <input type="hidden" id="c-edit-index">
+        <input type="text" id="c-name" placeholder="Company" required>
+        <div class="form-grid">
+          <select id="c-status"><option value="onboarding">Onboarding</option><option value="active">Active</option><option value="risk">At risk</option></select>
+          <input type="text" id="c-org" placeholder="Cadexus org ID (link only)">
+        </div>
+        <select id="c-value"><option value="no">First value not yet</option><option value="yes">First value reached</option></select>
+        <textarea id="c-risks" placeholder="Risks / blockers"></textarea>
+        <textarea id="c-outcome" placeholder="Verified outcome (permissioned only)"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="primary" type="submit">Save</button>
+          <button class="secondary" type="button" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+const KEY = "cadexus-os-v2";
+let data = JSON.parse(localStorage.getItem(KEY) || '{"leads":[],"customers":[],"notes":[]}');
+
+function save() { localStorage.setItem(KEY, JSON.stringify(data)); render(); }
+
+function render() {
+  const openLeads = data.leads.filter(l => !["won","lost"].includes(l.stage)).length;
+  const demos = data.leads.filter(l => l.stage === "demo").length;
+  const onboarding = data.customers.filter(c => c.status === "onboarding").length;
+  const risk = data.customers.filter(c => c.status === "risk").length;
+  document.getElementById("metrics").innerHTML = `
+    <div class="metric"><div class="value">${openLeads}</div><div class="label">Open leads</div></div>
+    <div class="metric"><div class="value">${demos}</div><div class="label">In demo</div></div>
+    <div class="metric"><div class="value">${onboarding}</div><div class="label">Onboarding</div></div>
+    <div class="metric"><div class="value">${risk}</div><div class="label">At risk</div></div>
+  `;
+
+  const next = data.leads.filter(l => l.next && !["won","lost"].includes(l.stage));
+  document.getElementById("next-actions").innerHTML = next.length
+    ? next.map(l => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><strong>${esc(l.name)}</strong> — ${esc(l.next)}</div>`).join("")
+    : "<div class='empty'>No open next actions.</div>";
+
+  document.getElementById("pipeline-body").innerHTML = data.leads.map((l,i) => `
+    <tr>
+      <td><strong>${esc(l.name)}</strong></td>
+      <td>${esc(l.source)}</td>
+      <td>${esc(l.segment)}</td>
+      <td><span class="status ${l.stage}">${l.stage}</span></td>
+      <td>${esc(l.next || "—")}</td>
+      <td class="actions">
+        <button class="secondary" onclick="editLead(${i})">Edit</button>
+        <button class="secondary" onclick="removeLead(${i})">Remove</button>
+      </td>
+    </tr>
+  `).join("");
+  document.getElementById("pipeline-empty").style.display = data.leads.length ? "none" : "block";
+
+  document.getElementById("customers-body").innerHTML = data.customers.map((c,i) => `
+    <tr>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td><span class="status ${c.status}">${c.status}</span></td>
+      <td>${c.firstValue === "yes" ? "Yes" : "No"}</td>
+      <td>${esc(c.orgId || "—")}</td>
+      <td style="max-width:180px;font-size:12px;">${esc((c.risks||"").slice(0,70))}</td>
+      <td class="actions">
+        <button class="secondary" onclick="editCustomer(${i})">Edit</button>
+        <button class="secondary" onclick="removeCustomer(${i})">Remove</button>
+      </td>
+    </tr>
+  `).join("");
+  document.getElementById("customers-empty").style.display = data.customers.length ? "none" : "block";
+
+  document.getElementById("notes-list").innerHTML = data.notes.slice().reverse().map(n => `
+    <div class="note-item"><div class="time">${new Date(n.ts).toLocaleString()}</div>${esc(n.text)}</div>
+  `).join("") || "<div class='empty'>No notes yet.</div>";
+}
+
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&","<":"<",">":">","\"":""","'":"&#39;"}[c]));}
+
+document.querySelectorAll("nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.view).classList.add("active");
+  });
+});
+
+function openModal(type, isEdit=false) {
+  document.getElementById("modal-"+type).classList.add("open");
+  if (type === "lead") document.getElementById("lead-modal-title").textContent = isEdit ? "Edit lead" : "Add lead";
+  if (type === "customer") document.getElementById("cust-modal-title").textContent = isEdit ? "Edit customer" : "Add customer";
+}
+function closeModal() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); }
+
+document.getElementById("lead-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const idx = document.getElementById("l-edit-index").value;
+  const item = {
+    name: document.getElementById("l-name").value.trim(),
+    source: document.getElementById("l-source").value,
+    segment: document.getElementById("l-segment").value,
+    stage: document.getElementById("l-stage").value,
+    next: document.getElementById("l-next").value.trim(),
+    notes: document.getElementById("l-notes").value.trim(),
+    ts: Date.now()
+  };
+  if (idx !== "") data.leads[idx] = item; else data.leads.push(item);
+  save();
+  e.target.reset();
+  document.getElementById("l-edit-index").value = "";
+  closeModal();
+});
+
+document.getElementById("customer-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const idx = document.getElementById("c-edit-index").value;
+  const item = {
+    name: document.getElementById("c-name").value.trim(),
+    status: document.getElementById("c-status").value,
+    orgId: document.getElementById("c-org").value.trim(),
+    firstValue: document.getElementById("c-value").value,
+    risks: document.getElementById("c-risks").value.trim(),
+    outcome: document.getElementById("c-outcome").value.trim(),
+    ts: Date.now()
+  };
+  if (idx !== "") data.customers[idx] = item; else data.customers.push(item);
+  save();
+  e.target.reset();
+  document.getElementById("c-edit-index").value = "";
+  closeModal();
+});
+
+document.getElementById("note-form").addEventListener("submit", e => {
+  e.preventDefault();
+  data.notes.push({ text: document.getElementById("note-input").value.trim(), ts: Date.now() });
+  save();
+  e.target.reset();
+});
+
+function editLead(i) {
+  const l = data.leads[i];
+  document.getElementById("l-edit-index").value = i;
+  document.getElementById("l-name").value = l.name;
+  document.getElementById("l-source").value = l.source;
+  document.getElementById("l-segment").value = l.segment;
+  document.getElementById("l-stage").value = l.stage;
+  document.getElementById("l-next").value = l.next || "";
+  document.getElementById("l-notes").value = l.notes || "";
+  openModal("lead", true);
+}
+function editCustomer(i) {
+  const c = data.customers[i];
+  document.getElementById("c-edit-index").value = i;
+  document.getElementById("c-name").value = c.name;
+  document.getElementById("c-status").value = c.status;
+  document.getElementById("c-org").value = c.orgId || "";
+  document.getElementById("c-value").value = c.firstValue;
+  document.getElementById("c-risks").value = c.risks || "";
+  document.getElementById("c-outcome").value = c.outcome || "";
+  openModal("customer", true);
+}
+function removeLead(i) { if (confirm("Remove this lead?")) { data.leads.splice(i,1); save(); } }
+function removeCustomer(i) { if (confirm("Remove this customer?")) { data.customers.splice(i,1); save(); } }
+
+function exportCSV(type) {
+  const rows = type === "leads" ? data.leads : data.customers;
+  if (!rows.length) return alert("Nothing to export");
+  const headers = type === "leads"
+    ? ["Name","Source","Segment","Stage","Next","Notes"]
+    : ["Name","Status","FirstValue","OrgID","Risks","Outcome"];
+  const csv = [headers.join(",")].concat(rows.map(r => headers.map(h => {
+    const key = h.toLowerCase().replace("firstvalue","firstValue").replace("orgid","orgId");
+    return `"${String(r[key]||"").replace(/"/g,'""')}"`;
+  }).join(","))).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = type + "-" + new Date().toISOString().slice(0,10) + ".csv";
+  a.click();
+}
+
+// Sample data on first load
+if (!data.leads.length && !data.customers.length) {
+  data.leads = [
+    {name:"Northside Builders", source:"Referral", segment:"10–50 staff builder", stage:"demo", next:"Follow up Thursday — send Blueprint outline", notes:"Owner frustrated with quoting delays", ts:Date.now()},
+    {name:"Harbour Trades", source:"Cadexus site", segment:"Trade contractor", stage:"qualified", next:"Book demo next week", notes:"Interested in site diary", ts:Date.now()}
+  ];
+  data.customers = [
+    {name:"Summit Construction", status:"onboarding", orgId:"org_abc123", firstValue:"no", risks:"Waiting on pricing library import", outcome:"", ts:Date.now()}
+  ];
+  save();
+} else {
+  render();
+}
+</script>
+</body>
+</html>
