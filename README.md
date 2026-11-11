@@ -1,4 +1,4 @@
-# Command Centre OS — $5k-level prototype
+# Command Centre OS
 
 Internal business operating system for the Cadexus / PlanDepa founder.
 
@@ -6,21 +6,21 @@ Internal business operating system for the Cadexus / PlanDepa founder.
 https://cadexus-command-centre-beyond-business.vercel.app
 
 ## Open locally
-Open `index.html` in any browser. Everything is stored in the browser. No server or account required.
+Open `index.html` in any browser. Everything is stored in this browser under `cadexus-os-v2`. No server or account required.
 
 ## What is included
-- **Dashboard** with live metrics and open next actions
-- **Pipeline** — add, edit and remove leads (source, segment, stage, next action, notes)
-- **Customers** — onboarding / active / at-risk accounts (Cadexus org ID link only, first-value flag, risks, verified outcomes)
-- **Decisions** notes
+- **Dashboard** with KPI cards, pipeline by stage and open next actions
+- **Pipeline** as a table or a board. Add, edit and remove leads (source, segment, stage, next action and notes)
+- **Customers** for onboarding, active and at-risk accounts, including the Cadexus org ID, first value, risks and verified outcome
+- **Decisions** with a timestamp on every note
 - **CSV export** for leads and customers
-- **Mobile-responsive** layout
-- **Sample data** on first open so it does not look empty
-- Edit and delete on every record
+- **Sample data** on first open, marked with a Sample badge and a control to clear it
+- **Light theme** with a dark mode toggle
+- **Mobile layout** with keyboard focus and readable contrast
 
 ## Boundaries
 - Cadexus remains the source of truth for customer jobs, invoices and permissions.
-- This is the founder/ops decision layer only.
+- This is the founder and ops decision layer only.
 - Only record verified outcomes with customer permission.
 
 ## Next paid upgrades (once used)

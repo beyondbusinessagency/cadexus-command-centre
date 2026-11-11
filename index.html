@@ -1,410 +1,1708 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Command Centre OS — Cadexus / PlanDepa</title>
+<meta name="theme-color" content="#f6f5f2">
+<meta name="description" content="Cadexus Command Centre. Founder and ops view for pipeline, customers and decisions.">
+<title>Dashboard — Command Centre</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23cf1322'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem("cadexus-os-v2-theme");
+    if (theme === "dark" || theme === "light") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  } catch (e) {}
+})();
+</script>
 <style>
   :root {
-    --bg: #0b0b0c;
-    --sidebar: #121214;
-    --surface: #1a1a1c;
-    --surface-2: #242426;
-    --ink: #f4f2ee;
-    --muted: #9a9790;
-    --accent: #cf1322;
-    --accent-hover: #e8273a;
-    --border: #2a2a2c;
-    --good: #34d399;
-    --warn: #fbbf24;
+    color-scheme: light;
+    --bg: #f6f5f2;
+    --sidebar: #fbfaf8;
+    --surface: #ffffff;
+    --surface-2: #f3f2ee;
+    --ink: #1c1b19;
+    --ink-hover: #000000;
+    --on-ink: #ffffff;
+    --muted: #5e5b55;
+    --border: #e6e3dc;
+    --border-strong: #d4d0c6;
+    --brand: #cf1322;
+    --danger: #8f1d1d;
+    --on-danger: #ffffff;
+    --good: #0e6b43;
+    --risk: #8a3412;
+    --focus: #1c1b19;
+    --banner: #f8f4ea;
+    --banner-border: #e4dcc8;
+    --shadow: 0 1px 2px rgba(28, 27, 25, 0.05);
+    --shadow-md: 0 16px 32px rgba(28, 27, 25, 0.12);
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --radius: 8px;
+    --radius-lg: 16px;
+    --font: "Geist", "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%231c1b19' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6.5 8 10.5 12 6.5'/></svg>");
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #101011;
+    --sidebar: #161617;
+    --surface: #1c1c1e;
+    --surface-2: #262628;
+    --ink: #f4f2ec;
+    --ink-hover: #ffffff;
+    --on-ink: #171716;
+    --muted: #c2beb4;
+    --border: #323236;
+    --border-strong: #45454b;
+    --brand: #ff4d57;
+    --danger: #ffb4b4;
+    --on-danger: #2a0d0d;
+    --good: #8ee0b5;
+    --risk: #ffc099;
+    --focus: #f4f2ec;
+    --banner: #2a261c;
+    --banner-border: #4d4634;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 16px 32px rgba(0, 0, 0, 0.45);
+    --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23f4f2ec' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6.5 8 10.5 12 6.5'/></svg>");
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-    background: var(--bg);
+    margin: 0;
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
     color: var(--ink);
-    min-height: 100vh;
-    display: flex;
+    background: var(--bg);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  p, h1, h2, h3 { margin: 0; }
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .skip {
+    position: absolute;
+    left: var(--space-2);
+    top: var(--space-1);
+    transform: translateY(-150%);
+    background: var(--ink);
+    color: var(--on-ink);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    z-index: 20;
+    text-decoration: none;
+  }
+  .skip:focus { transform: none; }
+
+  .app {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    height: 100dvh;
   }
   .sidebar {
-    width: 230px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     background: var(--sidebar);
     border-right: 1px solid var(--border);
-    padding: 24px 0;
-    flex-shrink: 0;
   }
-  .logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-  .logo h1 { font-size: 17px; font-weight: 600; }
-  .logo span { font-size: 11px; color: var(--muted); }
-  nav button {
-    width: 100%; text-align: left; background: none; border: none;
-    color: var(--muted); padding: 11px 20px; font-size: 13.5px; cursor: pointer;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-2) var(--space-2);
+    border-bottom: 1px solid var(--border);
   }
-  nav button.active, nav button:hover { background: var(--surface); color: var(--ink); }
-  nav button.active { border-left: 3px solid var(--accent); padding-left: 17px; }
-  .main { flex: 1; padding: 28px 36px; overflow-y: auto; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; }
-  .header h2 { font-size: 24px; font-weight: 600; }
-  .header .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .mark {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: var(--brand);
+    flex: 0 0 auto;
+  }
+  .brand-name {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .brand-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    width: 100%;
+    height: 40px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    text-align: left;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .nav-btn .icon { flex: 0 0 auto; }
+  .nav-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .nav-btn.active { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+  .sidebar-foot {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-top: 1px solid var(--border);
+  }
+  .footnote { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    height: 40px;
+    padding: 0 var(--space-1);
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
+  .theme-toggle:hover { background: var(--surface-2); }
+  .switch {
+    width: 32px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--border-strong);
+    position: relative;
+    flex: 0 0 auto;
+  }
+  .knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: #fff;
+    transition: transform 150ms ease;
+  }
+  .theme-toggle[aria-pressed="true"] .switch { background: var(--ink); }
+  .theme-toggle[aria-pressed="true"] .knob { transform: translateX(16px); }
+  [data-theme="dark"] .knob { background: #171716; }
+
+  .main {
+    min-width: 0;
+    overflow: auto;
+    padding: var(--space-4);
+  }
   .view { display: none; }
   .view.active { display: block; }
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .metric .value { font-size: 28px; font-weight: 600; }
-  .metric .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
-  .card h3 { font-size: 15px; margin-bottom: 12px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; color: var(--muted); font-weight: 500; padding: 10px 8px; border-bottom: 1px solid var(--border); }
-  td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .status.new { background: #1e3a5f; color: #93c5fd; }
-  .status.qualified { background: #1e3a2f; color: #86efac; }
-  .status.demo { background: #3a2e1e; color: #fcd34d; }
-  .status.proposal { background: #3a1e2e; color: #f9a8d4; }
-  .status.won { background: #14532d; color: #4ade80; }
-  .status.lost { background: #450a0a; color: #fca5a5; }
-  .status.onboarding { background: #1e293b; color: #7dd3fc; }
-  .status.active { background: #14532d; color: #4ade80; }
-  .status.risk { background: #451a03; color: #fdba74; }
-  button.primary { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
-  button.primary:hover { background: var(--accent-hover); }
-  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--ink); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-  input, select, textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
-  textarea { min-height: 64px; resize: vertical; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .empty { color: var(--muted); text-align: center; padding: 32px 0; }
-  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .note-item { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .note-item .time { color: var(--muted); font-size: 11px; }
-  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); align-items: center; justify-content: center; z-index: 100; }
-  .modal.open { display: flex; }
-  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 500px; max-width: 92vw; max-height: 90vh; overflow-y: auto; }
-  .modal-content h3 { margin-bottom: 16px; }
-  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  @media (max-width: 800px) {
-    body { flex-direction: column; }
-    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
-    nav { display: flex; overflow-x: auto; }
-    nav button { white-space: nowrap; padding: 8px 16px; }
-    .main { padding: 16px; }
+  .page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+  h2:focus { outline: none; }
+  .sub { margin-top: var(--space-1); color: var(--muted); font-size: 14px; max-width: 62ch; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: var(--space-1); align-items: center; justify-content: flex-end; }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-2);
+    background: var(--banner);
+    border: 1px solid var(--banner-border);
+    border-radius: var(--radius-lg);
+  }
+  .banner p { display: flex; align-items: flex-start; gap: var(--space-1); }
+  .banner .badge { flex: 0 0 auto; margin-top: 1px; }
+  .banner p span:last-child { flex: 1; min-width: 0; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    min-width: 0;
+    padding: var(--space-2);
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .metric:hover { border-color: var(--border-strong); }
+  .metric-label { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .metric-value {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-value.alert { color: var(--risk); }
+  .metric-hint { font-size: 12px; color: var(--muted); }
+
+  .dash-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: var(--space-3);
+    min-width: 0;
+  }
+  .panel.as-cards {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+  .panel-head h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .quiet { color: var(--muted); font-size: 13px; }
+
+  .stage-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 32px;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: 32px;
+    padding: var(--space-1) 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    border-radius: var(--radius);
+  }
+  .stage-row:hover { background: var(--surface-2); }
+  .stage-name { font-size: 14px; }
+  .bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .bar > span {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+    border-radius: inherit;
+    min-width: 0;
+  }
+  .stage-count {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-size: 13px;
+  }
+  .action {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    text-align: left;
+    border-radius: 0;
+  }
+  .action:first-child { padding-top: 0; }
+  .action:last-child { border-bottom: 0; padding-bottom: 0; }
+  .action:hover .action-name { text-decoration: underline; text-underline-offset: 3px; }
+  .action-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-width: 0; flex: 1; }
+  .action-name { font-weight: 600; }
+  .action-next { color: var(--muted); overflow-wrap: anywhere; }
+  .action-meta { display: flex; align-items: center; gap: var(--space-1); flex: 0 0 auto; }
+
+  .pipeline-tools, .customer-tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+  .chips {
+    display: flex;
+    gap: var(--space-1);
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .chip, .segmented button {
+    height: 32px;
+    padding: 0 var(--space-2);
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    white-space: nowrap;
+    font-size: 13px;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+  .chip { display: inline-flex; align-items: center; gap: var(--space-1); }
+  .chip:hover { border-color: var(--border-strong); color: var(--ink); }
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--on-ink);
+  }
+  .chip-count { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .segmented {
+    display: flex;
+    flex: 0 0 auto;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .segmented button {
+    height: 100%;
+    border: 0;
+    border-radius: 6px;
+    padding: 0 var(--space-2);
+  }
+  .segmented button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 880px; }
+  th, td { text-align: left; vertical-align: middle; padding: var(--space-2); }
+  th {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+  }
+  td { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background-color 150ms ease; }
+  tbody tr:hover { background: var(--surface-2); }
+  .name-line { display: inline-flex; align-items: center; gap: var(--space-1); flex-wrap: nowrap; font-weight: 600; white-space: nowrap; }
+  .record .name-line { flex-wrap: wrap; white-space: normal; }
+  .cell-sub { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; font-weight: 400; }
+  .wrap { overflow-wrap: anywhere; white-space: pre-wrap; max-width: 280px; }
+  .mono { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; align-items: center; gap: var(--space-1); justify-content: flex-end; }
+
+  .status, .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 var(--space-1);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .status.new { background: #e7eef8; color: #1a365d; }
+  .status.qualified { background: #e5f4ec; color: #0c5c38; }
+  .status.demo { background: #f8f1dc; color: #6b4500; }
+  .status.proposal { background: #f7e8f1; color: #72264f; }
+  .status.won, .status.good { background: #e3f6eb; color: #0c5c38; }
+  .status.lost { background: #fdecec; color: #8a1c1c; }
+  .status.onboarding { background: #e6f2fb; color: #0c4a6e; }
+  .status.active { background: #e3f6eb; color: #0c5c38; }
+  .status.risk { background: #fdeee4; color: #7c2d12; }
+  .status.unknown, .status.neutral { background: var(--surface-2); color: var(--muted); border-color: var(--border); }
+  .badge.sample { background: #f3f0e8; color: #4e493f; border-color: #e4dfd2; }
+  [data-theme="dark"] .status.new { background: #1c2c44; color: #d5e4fb; }
+  [data-theme="dark"] .status.qualified,
+  [data-theme="dark"] .status.won,
+  [data-theme="dark"] .status.good,
+  [data-theme="dark"] .status.active { background: #143226; color: #b6f0d0; }
+  [data-theme="dark"] .status.demo { background: #3a3018; color: #f8e2a8; }
+  [data-theme="dark"] .status.proposal { background: #3d2232; color: #f6c6df; }
+  [data-theme="dark"] .status.lost { background: #3f1c1c; color: #ffc9c9; }
+  [data-theme="dark"] .status.onboarding { background: #163044; color: #c9e6fb; }
+  [data-theme="dark"] .status.risk { background: #3d2718; color: #ffd0b0; }
+  [data-theme="dark"] .badge.sample { background: #2c2a24; color: #ebe4d4; border-color: #4a463c; }
+
+  .board {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 260px;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    overscroll-behavior-x: contain;
+  }
+  .column {
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-1);
+    min-height: 240px;
+  }
+  .column-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1);
+    padding: var(--space-1);
+  }
+  .column-head h3 { font-size: 13px; font-weight: 600; }
+  .column-count { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .deal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-2);
+    box-shadow: var(--shadow);
+    margin-top: var(--space-1);
+  }
+  .deal-meta { margin-top: var(--space-1); color: var(--muted); font-size: 13px; }
+  .deal-next { margin-top: var(--space-1); overflow-wrap: anywhere; }
+  .deal .actions { justify-content: flex-start; margin-top: var(--space-2); }
+  .column-empty { padding: var(--space-2) var(--space-1); color: var(--muted); font-size: 13px; }
+
+  .records { display: flex; flex-direction: column; gap: var(--space-2); }
+  .record {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .record-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-1); }
+  .record h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+  .record dl { display: grid; gap: var(--space-1); margin: 0; }
+  .record dl div { display: flex; flex-direction: column; }
+  .record dt { font-size: 12px; color: var(--muted); }
+  .record dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .record .actions { justify-content: flex-start; }
+
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-4) var(--space-2);
+  }
+  .empty-title { font-weight: 600; margin-bottom: var(--space-1); }
+  .empty-copy { color: var(--muted); max-width: 42ch; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 var(--space-2);
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .btn.primary { background: var(--ink); color: var(--on-ink); }
+  .btn.primary:hover { background: var(--ink-hover); }
+  .btn.secondary { background: var(--surface); border-color: var(--border-strong); }
+  .btn.secondary:hover { background: var(--surface-2); }
+  .btn.danger { background: #8f1d1d; color: #fff; }
+  .btn.danger:hover { background: #731616; }
+  .btn.small { height: 32px; padding: 0 var(--space-1); font-size: 13px; }
+  .btn.ghost { color: var(--muted); }
+  .btn.ghost:hover { background: var(--surface-2); color: var(--ink); }
+  .btn.danger-text { color: var(--danger); }
+  .btn.danger-text:hover { background: var(--surface-2); }
+
+  .field { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-2); }
+  .field span { font-size: 13px; font-weight: 500; }
+  .help { font-size: 12px; font-weight: 400; color: var(--muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-2); }
+  .form-grid .field { margin-bottom: 0; }
+  input, select, textarea {
+    width: 100%;
+    height: 40px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    transition: border-color 150ms ease;
+  }
+  textarea { height: auto; min-height: 96px; resize: vertical; line-height: 1.5; }
+  select {
+    appearance: none;
+    background-image: var(--chevron);
+    background-repeat: no-repeat;
+    background-position: right var(--space-2) center;
+    background-size: 16px 16px;
+    padding-right: 40px;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:user-invalid, select:user-invalid, textarea:user-invalid { border-color: var(--danger); }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .modal-head h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+  .modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-1); }
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+  dialog.sheet {
+    width: min(520px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-md);
+  }
+  dialog.sheet::backdrop { background: rgba(23, 23, 22, 0.48); }
+  dialog.confirm { width: min(440px, calc(100% - 32px)); }
+  dialog.sheet:focus-visible { outline: none; }
+  #confirm-copy { margin: var(--space-2) 0 var(--space-3); color: var(--muted); }
+
+  .composer-actions { display: flex; justify-content: flex-end; }
+  .notes-list { margin-top: var(--space-3); }
+  .note { padding: var(--space-2) 0; border-top: 1px solid var(--border); }
+  .note-time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: var(--space-1);
+    font-variant-numeric: tabular-nums;
+  }
+  .note p { overflow-wrap: anywhere; white-space: pre-wrap; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-3);
+    transform: translateX(-50%);
+    z-index: 30;
+    max-width: min(420px, calc(100% - 32px));
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--on-ink);
+    box-shadow: var(--shadow-md);
+    font-size: 14px;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 960px) {
     .metrics { grid-template-columns: 1fr 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+  .mobile-source { display: none; margin-top: var(--space-1); }
+  #content:focus { outline: none; }
+  @media (max-width: 800px) {
+    html, body { height: auto; min-height: 100%; }
+    .app { display: block; height: auto; min-height: 100dvh; }
+    .sidebar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "brand theme" "nav nav";
+      align-items: center;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--sidebar);
+    }
+    .brand { grid-area: brand; border-bottom: 0; padding: var(--space-2) var(--space-2) 0; }
+    .sidebar-foot { display: contents; }
+    .theme-toggle { grid-area: theme; width: auto; justify-self: end; margin-right: var(--space-1); }
+    .footnote { display: none; }
+    nav {
+      grid-area: nav;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: visible;
+      padding: var(--space-1) var(--space-1) var(--space-2);
+      gap: var(--space-1);
+    }
+    .nav-btn {
+      width: 100%;
+      height: auto;
+      min-height: 56px;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--space-1);
+      padding: var(--space-1) 0;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .main { overflow: visible; padding: var(--space-2); }
+    .page-head { flex-direction: column; align-items: stretch; }
+    .toolbar { display: grid; grid-template-columns: 1fr 1fr; justify-content: stretch; }
+    .toolbar .btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .banner { flex-direction: column; align-items: stretch; }
+    .banner .btn { align-self: flex-start; }
+    .pipeline-tools, .customer-tools { flex-direction: column; align-items: stretch; }
+    .chips { flex-wrap: wrap; overflow: visible; }
+    .segmented { align-self: flex-start; }
     .form-grid { grid-template-columns: 1fr; }
+    dialog.sheet { padding: var(--space-3); }
+    .mobile-source { display: block; }
   }
 </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="logo">
-      <h1>Command Centre</h1>
-      <span>Cadexus / PlanDepa OS</span>
-    </div>
-    <nav>
-      <button class="active" data-view="dashboard">Dashboard</button>
-      <button data-view="pipeline">Pipeline</button>
-      <button data-view="customers">Customers</button>
-      <button data-view="notes">Decisions</button>
-    </nav>
-  </aside>
-
-  <main class="main">
-    <section class="view active" id="dashboard">
-      <div class="header">
+  <a class="skip" href="#content">Skip to content</a>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
         <div>
-          <h2>Dashboard</h2>
-          <div class="sub">Internal operating view — founder / ops</div>
-        </div>
-        <div class="toolbar">
-          <button class="secondary" onclick="exportCSV('leads')">Export leads</button>
-          <button class="secondary" onclick="exportCSV('customers')">Export customers</button>
-          <button class="primary" onclick="openModal('lead')">+ New lead</button>
+          <span class="brand-name">Command Centre</span>
+          <span class="brand-sub">Cadexus / PlanDepa</span>
         </div>
       </div>
-      <div class="metrics" id="metrics"></div>
-      <div class="card">
-        <h3>Open next actions</h3>
-        <div id="next-actions"></div>
+      <nav aria-label="Primary">
+        <button type="button" class="nav-btn active" data-view="dashboard" aria-current="page">
+          <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="1.75" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="8.75" y="1.75" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="1.75" y="8.75" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="8.75" y="8.75" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+          Dashboard
+        </button>
+        <button type="button" class="nav-btn" data-view="pipeline">
+          <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2" width="3.2" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="6.4" y="2" width="3.2" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11.05" y="2" width="3.2" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          Pipeline
+        </button>
+        <button type="button" class="nav-btn" data-view="customers">
+          <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6" cy="5.25" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M2.25 13.25c.45-2.15 1.9-3.25 3.75-3.25s3.3 1.1 3.75 3.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11.25" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.1 13.25c.25-1.35 1-2.15 2.15-2.15 1.05 0 1.75.65 2.05 1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Customers
+        </button>
+        <button type="button" class="nav-btn" data-view="notes">
+          <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="1.75" width="10" height="12.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.75 5.5h4.5M5.75 8h4.5M5.75 10.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Decisions
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
+          <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+          <span>Dark mode</span>
+        </button>
+        <p class="footnote">Saved in this browser. Cadexus stays the source of truth for jobs and invoices.</p>
       </div>
-    </section>
+    </aside>
 
-    <section class="view" id="pipeline">
-      <div class="header">
-        <div>
-          <h2>Pipeline</h2>
-          <div class="sub">Leads and opportunities</div>
-        </div>
-        <div class="toolbar">
-          <button class="secondary" onclick="exportCSV('leads')">Export CSV</button>
-          <button class="primary" onclick="openModal('lead')">+ Add lead</button>
-        </div>
+    <main class="main" id="content" tabindex="-1">
+      <div class="banner" id="sample-banner" hidden>
+        <p><span class="badge sample">Sample</span><span>Northside Builders, Harbour Trades and Summit Construction are example records.</span></p>
+        <button type="button" class="btn secondary" data-action="clear-samples">Clear sample data</button>
       </div>
-      <div class="card" style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>Company</th><th>Source</th><th>Segment</th><th>Stage</th><th>Next action</th><th></th></tr></thead>
-          <tbody id="pipeline-body"></tbody>
-        </table>
-        <div class="empty" id="pipeline-empty">No leads yet.</div>
-      </div>
-    </section>
 
-    <section class="view" id="customers">
-      <div class="header">
-        <div>
-          <h2>Customers</h2>
-          <div class="sub">Onboarding, active and at-risk</div>
+      <section class="view active" id="dashboard" aria-labelledby="dashboard-title">
+        <div class="page-head">
+          <div>
+            <h2 id="dashboard-title" tabindex="-1">Dashboard</h2>
+            <p class="sub">Founder and ops view.</p>
+            <p class="sub mobile-source">Cadexus stays the source of truth for jobs and invoices.</p>
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn secondary" data-action="export" data-type="leads">Export leads</button>
+            <button type="button" class="btn secondary" data-action="export" data-type="customers">Export customers</button>
+            <button type="button" class="btn primary" data-action="add-lead">New lead</button>
+          </div>
         </div>
-        <div class="toolbar">
-          <button class="secondary" onclick="exportCSV('customers')">Export CSV</button>
-          <button class="primary" onclick="openModal('customer')">+ Add customer</button>
+        <div class="metrics" id="metrics"></div>
+        <div class="dash-grid">
+          <section class="panel" aria-labelledby="stage-heading">
+            <div class="panel-head">
+              <h3 id="stage-heading">Pipeline by stage</h3>
+              <span class="quiet" id="stage-total"></span>
+            </div>
+            <div id="stage-list"></div>
+          </section>
+          <section class="panel" aria-labelledby="next-heading">
+            <div class="panel-head">
+              <h3 id="next-heading">Open next actions</h3>
+              <span class="quiet" id="next-total"></span>
+            </div>
+            <div id="next-actions"></div>
+          </section>
         </div>
-      </div>
-      <div class="card" style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>Company</th><th>Status</th><th>First value</th><th>Org ID</th><th>Risks</th><th></th></tr></thead>
-          <tbody id="customers-body"></tbody>
-        </table>
-        <div class="empty" id="customers-empty">No customers tracked.</div>
-      </div>
-    </section>
+      </section>
 
-    <section class="view" id="notes">
-      <div class="header">
-        <div>
-          <h2>Decisions & Notes</h2>
-          <div class="sub">What was decided or tested</div>
+      <section class="view" id="pipeline" aria-labelledby="pipeline-title">
+        <div class="page-head">
+          <div>
+            <h2 id="pipeline-title" tabindex="-1">Pipeline</h2>
+            <p class="sub">Leads and opportunities by stage.</p>
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn secondary" data-action="export" data-type="leads">Export leads</button>
+            <button type="button" class="btn primary" data-action="add-lead">New lead</button>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <form id="note-form">
-          <textarea id="note-input" placeholder="Decision, experiment result, follow-up rule..." required></textarea>
-          <button class="primary" type="submit">Save note</button>
-        </form>
-        <div id="notes-list" style="margin-top:16px;"></div>
-      </div>
-    </section>
-  </main>
+        <div class="pipeline-tools" id="pipeline-tools">
+          <div class="chips" id="stage-chips" role="group" aria-label="Filter by stage"></div>
+          <div class="segmented" role="group" aria-label="Pipeline layout">
+            <button type="button" data-action="pipeline-view" data-mode="table" aria-pressed="true">Table</button>
+            <button type="button" data-action="pipeline-view" data-mode="board" aria-pressed="false">Board</button>
+          </div>
+        </div>
+        <div class="panel" id="pipeline-panel"></div>
+      </section>
 
-  <div class="modal" id="modal-lead">
-    <div class="modal-content">
+      <section class="view" id="customers" aria-labelledby="customers-title">
+        <div class="page-head">
+          <div>
+            <h2 id="customers-title" tabindex="-1">Customers</h2>
+            <p class="sub">Onboarding, active and at-risk accounts. Org ID is a link only.</p>
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn secondary" data-action="export" data-type="customers">Export customers</button>
+            <button type="button" class="btn primary" data-action="add-customer">New customer</button>
+          </div>
+        </div>
+        <div class="customer-tools" id="customer-tools">
+          <div class="chips" id="customer-chips" role="group" aria-label="Filter by status"></div>
+        </div>
+        <div class="panel" id="customers-panel"></div>
+      </section>
+
+      <section class="view" id="notes" aria-labelledby="notes-title">
+        <div class="page-head">
+          <div>
+            <h2 id="notes-title" tabindex="-1">Decisions</h2>
+            <p class="sub">What was decided or tested.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <form id="note-form">
+            <label class="field">
+              <span>New note</span>
+              <textarea id="note-input" placeholder="Decision, test result or follow-up rule" required></textarea>
+              <span class="help">Saved in this browser only.</span>
+            </label>
+            <div class="composer-actions">
+              <button class="btn primary" type="submit">Save note</button>
+            </div>
+          </form>
+          <div class="notes-list" id="notes-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="sheet" id="modal-lead" aria-labelledby="lead-modal-title">
+    <div class="modal-head">
       <h3 id="lead-modal-title">Add lead</h3>
-      <form id="lead-form">
-        <input type="hidden" id="l-edit-index">
-        <input type="text" id="l-name" placeholder="Company / name" required>
-        <div class="form-grid">
-          <select id="l-source"><option>Referral</option><option>PlanDepa site</option><option>Cadexus site</option><option>LinkedIn</option><option>Outbound</option><option>Other</option></select>
-          <select id="l-segment"><option>10–50 staff builder</option><option>Trade contractor</option><option>Small residential</option><option>Other</option></select>
-        </div>
+      <button type="button" class="icon-btn" data-action="close-modal" data-modal="modal-lead" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <form id="lead-form" autocomplete="off">
+      <input type="hidden" id="l-edit-index">
+      <label class="field">
+        <span>Company</span>
+        <input type="text" id="l-name" placeholder="Company or contact" required>
+      </label>
+      <div class="form-grid">
+        <label class="field">
+          <span>Source</span>
+          <select id="l-source">
+            <option>Referral</option>
+            <option>PlanDepa site</option>
+            <option>Cadexus site</option>
+            <option>LinkedIn</option>
+            <option>Outbound</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Segment</span>
+          <select id="l-segment">
+            <option>10–50 staff builder</option>
+            <option>Trade contractor</option>
+            <option>Small residential</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>Stage</span>
         <select id="l-stage">
-          <option value="new">New</option><option value="qualified">Qualified</option><option value="demo">Demo</option>
-          <option value="proposal">Proposal / Blueprint</option><option value="won">Won</option><option value="lost">Lost</option>
+          <option value="new">New</option>
+          <option value="qualified">Qualified</option>
+          <option value="demo">Demo</option>
+          <option value="proposal">Proposal / Blueprint</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
         </select>
-        <input type="text" id="l-next" placeholder="Next action and date">
-        <textarea id="l-notes" placeholder="Notes"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button class="primary" type="submit">Save</button>
-          <button class="secondary" type="button" onclick="closeModal()">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
+      </label>
+      <label class="field">
+        <span>Next action</span>
+        <input type="text" id="l-next" placeholder="What happens next and when">
+      </label>
+      <label class="field">
+        <span>Notes</span>
+        <textarea id="l-notes" placeholder="Context for the next conversation"></textarea>
+      </label>
+      <div class="modal-actions">
+        <button class="btn secondary" type="button" data-action="close-modal" data-modal="modal-lead">Cancel</button>
+        <button class="btn primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
 
-  <div class="modal" id="modal-customer">
-    <div class="modal-content">
+  <dialog class="sheet" id="modal-customer" aria-labelledby="cust-modal-title">
+    <div class="modal-head">
       <h3 id="cust-modal-title">Add customer</h3>
-      <form id="customer-form">
-        <input type="hidden" id="c-edit-index">
-        <input type="text" id="c-name" placeholder="Company" required>
-        <div class="form-grid">
-          <select id="c-status"><option value="onboarding">Onboarding</option><option value="active">Active</option><option value="risk">At risk</option></select>
-          <input type="text" id="c-org" placeholder="Cadexus org ID (link only)">
-        </div>
-        <select id="c-value"><option value="no">First value not yet</option><option value="yes">First value reached</option></select>
-        <textarea id="c-risks" placeholder="Risks / blockers"></textarea>
-        <textarea id="c-outcome" placeholder="Verified outcome (permissioned only)"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button class="primary" type="submit">Save</button>
-          <button class="secondary" type="button" onclick="closeModal()">Cancel</button>
-        </div>
-      </form>
+      <button type="button" class="icon-btn" data-action="close-modal" data-modal="modal-customer" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
     </div>
-  </div>
+    <form id="customer-form" autocomplete="off">
+      <input type="hidden" id="c-edit-index">
+      <label class="field">
+        <span>Company</span>
+        <input type="text" id="c-name" placeholder="Company" required>
+      </label>
+      <div class="form-grid">
+        <label class="field">
+          <span>Status</span>
+          <select id="c-status">
+            <option value="onboarding">Onboarding</option>
+            <option value="active">Active</option>
+            <option value="risk">At risk</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Cadexus org ID</span>
+          <input type="text" id="c-org" placeholder="org_…">
+          <span class="help">Link only. Cadexus stays the source of truth for jobs and invoices.</span>
+        </label>
+      </div>
+      <label class="field">
+        <span>First value</span>
+        <select id="c-value">
+          <option value="no">Not yet</option>
+          <option value="yes">Reached</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Risks</span>
+        <textarea id="c-risks" placeholder="Blockers or open risks"></textarea>
+      </label>
+      <label class="field">
+        <span>Verified outcome</span>
+        <textarea id="c-outcome" placeholder="What the customer confirmed"></textarea>
+        <span class="help">Only record this with the customer's permission.</span>
+      </label>
+      <div class="modal-actions">
+        <button class="btn secondary" type="button" data-action="close-modal" data-modal="modal-customer">Cancel</button>
+        <button class="btn primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="sheet confirm" id="confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <h3 id="confirm-title">Remove record</h3>
+      <p id="confirm-copy"></p>
+      <div class="modal-actions">
+        <button class="btn secondary" type="submit" value="cancel">Cancel</button>
+        <button class="btn danger" id="confirm-accept" type="submit" value="confirm">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 const KEY = "cadexus-os-v2";
-let data = JSON.parse(localStorage.getItem(KEY) || '{"leads":[],"customers":[],"notes":[]}');
+const THEME_KEY = "cadexus-os-v2-theme";
+const VIEW_KEY = "cadexus-os-v2-pipeline-view";
+const SAMPLES_KEY = "cadexus-os-v2-samples-dismissed";
 
-function save() { localStorage.setItem(KEY, JSON.stringify(data)); render(); }
+const STAGES = [
+  { id: "new", label: "New" },
+  { id: "qualified", label: "Qualified" },
+  { id: "demo", label: "Demo" },
+  { id: "proposal", label: "Proposal" },
+  { id: "won", label: "Won" },
+  { id: "lost", label: "Lost" }
+];
+const STATUSES = [
+  { id: "onboarding", label: "Onboarding" },
+  { id: "active", label: "Active" },
+  { id: "risk", label: "At risk" }
+];
+const STAGE_IDS = new Set(STAGES.map(s => s.id));
+const TITLES = { dashboard: "Dashboard", pipeline: "Pipeline", customers: "Customers", notes: "Decisions" };
 
-function render() {
-  const openLeads = data.leads.filter(l => !["won","lost"].includes(l.stage)).length;
+let stageFilter = "all";
+let customerFilter = "all";
+let pipelineView = "table";
+let pendingFocus = null;
+let lastFocus = null;
+let toastTimer = 0;
+
+function loadData() {
+  let parsed = null;
+  try { parsed = JSON.parse(localStorage.getItem(KEY) || ""); } catch (e) { parsed = null; }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    parsed = { leads: [], customers: [], notes: [] };
+  }
+  if (!Array.isArray(parsed.leads)) parsed.leads = [];
+  if (!Array.isArray(parsed.customers)) parsed.customers = [];
+  if (!Array.isArray(parsed.notes)) parsed.notes = [];
+  return parsed;
+}
+
+let data = loadData();
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(data)); }
+  catch (e) { toast("Could not save in this browser."); }
+  render();
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+
+function isMobile() {
+  return window.matchMedia("(max-width: 800px)").matches;
+}
+
+function stageLabel(id) {
+  const found = STAGES.find(s => s.id === id);
+  return found ? found.label : (id || "Unknown");
+}
+function statusLabel(id) {
+  const found = STATUSES.find(s => s.id === id);
+  return found ? found.label : (id || "Unknown");
+}
+function knownClass(id, allowed) {
+  return allowed.has(id) ? id : "unknown";
+}
+function badge(className, label) {
+  return `<span class="status ${esc(className)}">${esc(label)}</span>`;
+}
+function sampleBadge(on) {
+  return on ? '<span class="badge sample">Sample</span>' : "";
+}
+function isSampleLead(lead) {
+  if (!lead || typeof lead !== "object") return false;
+  if (lead.sample === true) return true;
+  if (lead.name === "Northside Builders" && lead.source === "Referral" && lead.segment === "10–50 staff builder") return true;
+  if (lead.name === "Harbour Trades" && lead.source === "Cadexus site" && lead.segment === "Trade contractor") return true;
+  return false;
+}
+function isSampleCustomer(customer) {
+  if (!customer || typeof customer !== "object") return false;
+  if (customer.sample === true) return true;
+  return customer.name === "Summit Construction" && customer.orgId === "org_abc123" && customer.status === "onboarding";
+}
+function hasSamples() {
+  return data.leads.some(isSampleLead) || data.customers.some(isSampleCustomer);
+}
+function plural(n, word) {
+  return n + " " + word + (n === 1 ? "" : "s");
+}
+function formatWhen(ts) {
+  const date = new Date(ts);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-AU", {
+    day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit"
+  });
+}
+function firstValueLabel(value) {
+  return value === "yes" ? "Reached" : "Not yet";
+}
+function outcomeHtml(value) {
+  const text = String(value || "").trim();
+  return text ? esc(text) : '<span class="quiet">Not recorded</span>';
+}
+function risksHtml(value) {
+  const text = String(value || "").trim();
+  return text ? esc(text) : '<span class="quiet">—</span>';
+}
+function filteredLeads() {
+  return data.leads.map((lead, index) => ({ lead, index })).filter(({ lead }) => {
+    if (stageFilter === "all") return true;
+    if (stageFilter === "open") return lead.stage !== "won" && lead.stage !== "lost";
+    return lead.stage === stageFilter;
+  });
+}
+function filteredCustomers() {
+  return data.customers.map((customer, index) => ({ customer, index })).filter(({ customer }) => {
+    if (customerFilter === "all") return true;
+    return customer.status === customerFilter;
+  });
+}
+function leadActions(index) {
+  return `<div class="actions">
+    <button type="button" class="btn small ghost" data-action="edit-lead" data-index="${index}">Edit</button>
+    <button type="button" class="btn small ghost danger-text" data-action="remove-lead" data-index="${index}">Remove</button>
+  </div>`;
+}
+function customerActions(index) {
+  return `<div class="actions">
+    <button type="button" class="btn small ghost" data-action="edit-customer" data-index="${index}">Edit</button>
+    <button type="button" class="btn small ghost danger-text" data-action="remove-customer" data-index="${index}">Remove</button>
+  </div>`;
+}
+
+function renderMetrics() {
+  const openLeads = data.leads.filter(l => l.stage !== "won" && l.stage !== "lost").length;
   const demos = data.leads.filter(l => l.stage === "demo").length;
   const onboarding = data.customers.filter(c => c.status === "onboarding").length;
   const risk = data.customers.filter(c => c.status === "risk").length;
-  document.getElementById("metrics").innerHTML = `
-    <div class="metric"><div class="value">${openLeads}</div><div class="label">Open leads</div></div>
-    <div class="metric"><div class="value">${demos}</div><div class="label">In demo</div></div>
-    <div class="metric"><div class="value">${onboarding}</div><div class="label">Onboarding</div></div>
-    <div class="metric"><div class="value">${risk}</div><div class="label">At risk</div></div>
-  `;
-
-  const next = data.leads.filter(l => l.next && !["won","lost"].includes(l.stage));
-  document.getElementById("next-actions").innerHTML = next.length
-    ? next.map(l => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><strong>${esc(l.name)}</strong> — ${esc(l.next)}</div>`).join("")
-    : "<div class='empty'>No open next actions.</div>";
-
-  document.getElementById("pipeline-body").innerHTML = data.leads.map((l,i) => `
-    <tr>
-      <td><strong>${esc(l.name)}</strong></td>
-      <td>${esc(l.source)}</td>
-      <td>${esc(l.segment)}</td>
-      <td><span class="status ${l.stage}">${l.stage}</span></td>
-      <td>${esc(l.next || "—")}</td>
-      <td class="actions">
-        <button class="secondary" onclick="editLead(${i})">Edit</button>
-        <button class="secondary" onclick="removeLead(${i})">Remove</button>
-      </td>
-    </tr>
-  `).join("");
-  document.getElementById("pipeline-empty").style.display = data.leads.length ? "none" : "block";
-
-  document.getElementById("customers-body").innerHTML = data.customers.map((c,i) => `
-    <tr>
-      <td><strong>${esc(c.name)}</strong></td>
-      <td><span class="status ${c.status}">${c.status}</span></td>
-      <td>${c.firstValue === "yes" ? "Yes" : "No"}</td>
-      <td>${esc(c.orgId || "—")}</td>
-      <td style="max-width:180px;font-size:12px;">${esc((c.risks||"").slice(0,70))}</td>
-      <td class="actions">
-        <button class="secondary" onclick="editCustomer(${i})">Edit</button>
-        <button class="secondary" onclick="removeCustomer(${i})">Remove</button>
-      </td>
-    </tr>
-  `).join("");
-  document.getElementById("customers-empty").style.display = data.customers.length ? "none" : "block";
-
-  document.getElementById("notes-list").innerHTML = data.notes.slice().reverse().map(n => `
-    <div class="note-item"><div class="time">${new Date(n.ts).toLocaleString()}</div>${esc(n.text)}</div>
-  `).join("") || "<div class='empty'>No notes yet.</div>";
+  const cards = [
+    { label: "Open leads", value: openLeads, hint: "Still in play", action: "goto-stage", stage: "open" },
+    { label: "In demo", value: demos, hint: "Demo stage", action: "goto-stage", stage: "demo" },
+    { label: "Onboarding", value: onboarding, hint: "Getting started", action: "goto-customers", status: "onboarding" },
+    { label: "At risk", value: risk, hint: "Needs attention", action: "goto-customers", status: "risk", alert: risk > 0 }
+  ];
+  document.getElementById("metrics").innerHTML = cards.map(card => `
+    <button type="button" class="metric" data-action="${card.action}" ${card.stage ? `data-stage="${card.stage}"` : ""} ${card.status ? `data-status="${card.status}"` : ""}>
+      <span class="metric-label">${card.label}</span>
+      <span class="metric-value${card.alert ? " alert" : ""}">${card.value}</span>
+      <span class="metric-hint">${card.hint}</span>
+    </button>`).join("");
 }
 
-function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&","<":"<",">":">","\"":""","'":"&#39;"}[c]));}
+function renderStageList() {
+  const counts = STAGES.map(stage => ({
+    ...stage,
+    count: data.leads.filter(lead => lead.stage === stage.id).length
+  }));
+  const max = Math.max(1, ...counts.map(stage => stage.count));
+  document.getElementById("stage-total").textContent = plural(data.leads.length, "lead");
+  document.getElementById("stage-list").innerHTML = counts.map(stage => `
+    <button type="button" class="stage-row" data-action="goto-stage" data-stage="${stage.id}">
+      <span class="stage-name">${stage.label}</span>
+      <span class="bar" aria-hidden="true"><span style="width:${Math.round(stage.count / max * 100)}%"></span></span>
+      <span class="stage-count">${stage.count}</span>
+    </button>`).join("");
+}
 
-document.querySelectorAll("nav button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.view).classList.add("active");
+function renderNextActions() {
+  const rows = data.leads
+    .map((lead, index) => ({ lead, index }))
+    .filter(({ lead }) => lead.next && lead.stage !== "won" && lead.stage !== "lost");
+  document.getElementById("next-total").textContent = rows.length ? rows.length + " open" : "None";
+  document.getElementById("next-actions").innerHTML = rows.length ? rows.map(({ lead, index }) => `
+    <button type="button" class="action" data-action="edit-lead" data-index="${index}">
+      <span class="action-body">
+        <span class="name-line"><span class="action-name">${esc(lead.name)}</span>${sampleBadge(isSampleLead(lead))}</span>
+        <span class="action-next">${esc(lead.next)}</span>
+      </span>
+      <span class="action-meta">${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}<span class="quiet">Edit</span></span>
+    </button>`).join("") : `<div class="empty"><p class="empty-title">No open next actions</p><p class="empty-copy">Add a next step on a lead that is still in play.</p></div>`;
+}
+
+function renderStageChips() {
+  const filters = [{ id: "all", label: "All" }, { id: "open", label: "Open" }].concat(STAGES);
+  document.getElementById("stage-chips").innerHTML = filters.map(filter => {
+    const count = filter.id === "all"
+      ? data.leads.length
+      : filter.id === "open"
+        ? data.leads.filter(lead => lead.stage !== "won" && lead.stage !== "lost").length
+        : data.leads.filter(lead => lead.stage === filter.id).length;
+    const pressed = stageFilter === filter.id ? "true" : "false";
+    return `<button type="button" class="chip" data-action="stage-filter" data-stage="${filter.id}" aria-pressed="${pressed}">${filter.label}<span class="chip-count">${count}</span></button>`;
+  }).join("");
+  document.querySelectorAll('[data-action="pipeline-view"]').forEach(button => {
+    button.setAttribute("aria-pressed", button.dataset.mode === pipelineView ? "true" : "false");
   });
+}
+
+function renderPipeline() {
+  const rows = filteredLeads();
+  const tools = document.getElementById("pipeline-tools");
+  const panel = document.getElementById("pipeline-panel");
+  tools.hidden = data.leads.length === 0;
+  renderStageChips();
+  if (!data.leads.length) {
+    panel.classList.remove("as-cards");
+    panel.innerHTML = `<div class="empty"><p class="empty-title">No leads yet</p><p class="empty-copy">Add the first lead to start the pipeline.</p><button type="button" class="btn primary" data-action="add-lead">New lead</button></div>`;
+    return;
+  }
+  if (!rows.length) {
+    panel.classList.remove("as-cards");
+    panel.innerHTML = `<div class="empty"><p class="empty-title">Nothing in this view</p><p class="empty-copy">Choose another stage or add a lead.</p></div>`;
+    return;
+  }
+  if (pipelineView === "board") {
+    panel.classList.remove("as-cards");
+    const known = STAGES.slice();
+    const extra = rows.filter(({ lead }) => !STAGE_IDS.has(lead.stage));
+    const columns = known.map(stage => ({ id: stage.id, label: stage.label, rows: rows.filter(({ lead }) => lead.stage === stage.id) }));
+    if (extra.length && (stageFilter === "all" || stageFilter === "open")) {
+      columns.push({ id: "other", label: "Other", rows: extra });
+    }
+    panel.innerHTML = `<div class="board">${columns.map(column => `
+      <section class="column" aria-label="${esc(column.label)}">
+        <div class="column-head"><h3>${esc(column.label)}</h3><span class="column-count">${column.rows.length}</span></div>
+        ${column.rows.length ? column.rows.map(({ lead, index }) => `
+          <article class="deal">
+            <div class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</div>
+            <p class="deal-meta">${esc(lead.segment || "No segment")}</p>
+            <p class="deal-meta">${esc(lead.source || "No source")}</p>
+            ${lead.next ? `<p class="deal-next">${esc(lead.next)}</p>` : ""}
+            ${leadActions(index)}
+          </article>`).join("") : `<p class="column-empty">No leads</p>`}
+      </section>`).join("")}</div>`;
+    return;
+  }
+  if (isMobile()) {
+    panel.classList.add("as-cards");
+    panel.innerHTML = `<div class="records">${rows.map(({ lead, index }) => `
+      <article class="record">
+        <div class="record-head">
+          <h3 class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</h3>
+          ${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}
+        </div>
+        <dl>
+          <div><dt>Source</dt><dd>${esc(lead.source || "—")}</dd></div>
+          <div><dt>Segment</dt><dd>${esc(lead.segment || "—")}</dd></div>
+          <div><dt>Next action</dt><dd>${esc(lead.next || "—")}</dd></div>
+        </dl>
+        ${leadActions(index)}
+      </article>`).join("")}</div>`;
+    return;
+  }
+  panel.classList.remove("as-cards");
+  panel.innerHTML = `<div class="table-scroll"><table>
+    <thead><tr>
+      <th>Company</th><th>Source</th><th>Segment</th><th>Stage</th><th>Next action</th><th><span class="sr-only">Actions</span></th>
+    </tr></thead>
+    <tbody>${rows.map(({ lead, index }) => `
+      <tr>
+        <td><span class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</span></td>
+        <td>${esc(lead.source || "—")}</td>
+        <td>${esc(lead.segment || "—")}</td>
+        <td>${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}</td>
+        <td class="wrap">${esc(lead.next || "—")}</td>
+        <td>${leadActions(index)}</td>
+      </tr>`).join("")}</tbody>
+  </table></div>`;
+}
+
+function renderCustomerChips() {
+  const filters = [{ id: "all", label: "All" }].concat(STATUSES);
+  document.getElementById("customer-chips").innerHTML = filters.map(filter => {
+    const count = filter.id === "all"
+      ? data.customers.length
+      : data.customers.filter(customer => customer.status === filter.id).length;
+    const pressed = customerFilter === filter.id ? "true" : "false";
+    return `<button type="button" class="chip" data-action="customer-filter" data-status="${filter.id}" aria-pressed="${pressed}">${filter.label}<span class="chip-count">${count}</span></button>`;
+  }).join("");
+}
+
+function renderCustomers() {
+  const rows = filteredCustomers();
+  const tools = document.getElementById("customer-tools");
+  const panel = document.getElementById("customers-panel");
+  const statusIds = new Set(STATUSES.map(status => status.id));
+  tools.hidden = data.customers.length === 0;
+  renderCustomerChips();
+  if (!data.customers.length) {
+    panel.classList.remove("as-cards");
+    panel.innerHTML = `<div class="empty"><p class="empty-title">No customers yet</p><p class="empty-copy">Track onboarding, active and at-risk accounts here.</p><button type="button" class="btn primary" data-action="add-customer">New customer</button></div>`;
+    return;
+  }
+  if (!rows.length) {
+    panel.classList.remove("as-cards");
+    panel.innerHTML = `<div class="empty"><p class="empty-title">Nothing in this view</p><p class="empty-copy">Choose another status or add a customer.</p></div>`;
+    return;
+  }
+  if (isMobile()) {
+    panel.classList.add("as-cards");
+    panel.innerHTML = `<div class="records">${rows.map(({ customer, index }) => `
+      <article class="record">
+        <div class="record-head">
+          <h3 class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</h3>
+          ${badge(knownClass(customer.status, statusIds), statusLabel(customer.status))}
+        </div>
+        <dl>
+          <div><dt>First value</dt><dd>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</dd></div>
+          <div><dt>Cadexus org ID</dt><dd class="mono">${esc(customer.orgId || "—")}</dd></div>
+          <div><dt>Risks</dt><dd>${risksHtml(customer.risks)}</dd></div>
+          <div><dt>Verified outcome</dt><dd>${outcomeHtml(customer.outcome)}</dd></div>
+        </dl>
+        ${customerActions(index)}
+      </article>`).join("")}</div>`;
+    return;
+  }
+  panel.classList.remove("as-cards");
+  panel.innerHTML = `<div class="table-scroll"><table>
+    <thead><tr>
+      <th>Company</th><th>Status</th><th>First value</th><th>Org ID</th><th>Risks</th><th>Verified outcome</th><th><span class="sr-only">Actions</span></th>
+    </tr></thead>
+    <tbody>${rows.map(({ customer, index }) => `
+      <tr>
+        <td><span class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</span></td>
+        <td>${badge(knownClass(customer.status, statusIds), statusLabel(customer.status))}</td>
+        <td>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</td>
+        <td class="mono">${esc(customer.orgId || "—")}</td>
+        <td class="wrap">${risksHtml(customer.risks)}</td>
+        <td class="wrap">${outcomeHtml(customer.outcome)}</td>
+        <td>${customerActions(index)}</td>
+      </tr>`).join("")}</tbody>
+  </table></div>`;
+}
+
+function renderNotes() {
+  const notes = data.notes.slice().reverse();
+  document.getElementById("notes-list").innerHTML = notes.length ? notes.map(note => `
+    <article class="note">
+      <div class="note-time">${esc(formatWhen(note.ts))}</div>
+      <p>${esc(note.text)}</p>
+    </article>`).join("") : `<div class="empty"><p class="empty-title">No notes yet</p><p class="empty-copy">Record a decision, a test result or a follow-up rule.</p></div>`;
+}
+
+function renderBanner() {
+  document.getElementById("sample-banner").hidden = !hasSamples();
+}
+
+function render() {
+  renderBanner();
+  renderMetrics();
+  renderStageList();
+  renderNextActions();
+  renderPipeline();
+  renderCustomers();
+  renderNotes();
+  if (pendingFocus) {
+    const selector = pendingFocus;
+    pendingFocus = null;
+    const el = document.querySelector(selector);
+    if (el) el.focus();
+  }
+}
+
+function showView(id) {
+  document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view.id === id));
+  document.querySelectorAll(".nav-btn").forEach(button => {
+    const on = button.dataset.view === id;
+    button.classList.toggle("active", on);
+    if (on) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+  document.title = TITLES[id] + " — Command Centre";
+}
+
+function activeHeading() {
+  const view = document.querySelector(".view.active");
+  return view ? view.querySelector("h2") : null;
+}
+
+function openDialog(id) {
+  lastFocus = document.activeElement;
+  const dialog = document.getElementById(id);
+  if (!dialog.open) dialog.showModal();
+  const field = dialog.querySelector("input:not([type='hidden']), select, textarea");
+  if (field) field.focus();
+}
+function closeDialog(id) {
+  const dialog = document.getElementById(id);
+  if (dialog && dialog.open) dialog.close();
+}
+
+function askConfirm(title, message, confirmLabel) {
+  const dialog = document.getElementById("confirm-dialog");
+  document.getElementById("confirm-title").textContent = title;
+  document.getElementById("confirm-copy").textContent = message;
+  document.getElementById("confirm-accept").textContent = confirmLabel;
+  return new Promise(resolve => {
+    const onClose = () => {
+      dialog.removeEventListener("close", onClose);
+      resolve(dialog.returnValue === "confirm");
+    };
+    dialog.addEventListener("close", onClose);
+    dialog.showModal();
+  });
+}
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const dark = theme === "dark";
+  document.getElementById("theme-toggle").setAttribute("aria-pressed", dark ? "true" : "false");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", dark ? "#101011" : "#f6f5f2");
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+}
+
+function requireName(input) {
+  const value = input.value.trim();
+  if (value) {
+    input.setCustomValidity("");
+    return value;
+  }
+  input.setCustomValidity("Enter a company name.");
+  input.reportValidity();
+  return "";
+}
+
+document.querySelectorAll(".nav-btn").forEach(button => {
+  button.addEventListener("click", () => showView(button.dataset.view));
 });
 
-function openModal(type, isEdit=false) {
-  document.getElementById("modal-"+type).classList.add("open");
-  if (type === "lead") document.getElementById("lead-modal-title").textContent = isEdit ? "Edit lead" : "Add lead";
-  if (type === "customer") document.getElementById("cust-modal-title").textContent = isEdit ? "Edit customer" : "Add customer";
-}
-function closeModal() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); }
+document.getElementById("theme-toggle").addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+});
 
-document.getElementById("lead-form").addEventListener("submit", e => {
-  e.preventDefault();
+document.body.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  const action = button.dataset.action;
+  if (action === "add-lead") {
+    document.getElementById("lead-form").reset();
+    document.getElementById("l-edit-index").value = "";
+    document.getElementById("lead-modal-title").textContent = "Add lead";
+    openDialog("modal-lead");
+  } else if (action === "add-customer") {
+    document.getElementById("customer-form").reset();
+    document.getElementById("c-edit-index").value = "";
+    document.getElementById("cust-modal-title").textContent = "Add customer";
+    openDialog("modal-customer");
+  } else if (action === "close-modal") {
+    closeDialog(button.dataset.modal);
+  } else if (action === "edit-lead") {
+    editLead(Number(button.dataset.index));
+  } else if (action === "edit-customer") {
+    editCustomer(Number(button.dataset.index));
+  } else if (action === "remove-lead") {
+    await removeLead(Number(button.dataset.index));
+  } else if (action === "remove-customer") {
+    await removeCustomer(Number(button.dataset.index));
+  } else if (action === "export") {
+    exportCSV(button.dataset.type);
+  } else if (action === "stage-filter") {
+    stageFilter = button.dataset.stage;
+    pendingFocus = `[data-action="stage-filter"][data-stage="${stageFilter}"]`;
+    render();
+  } else if (action === "customer-filter") {
+    customerFilter = button.dataset.status;
+    pendingFocus = `[data-action="customer-filter"][data-status="${customerFilter}"]`;
+    render();
+  } else if (action === "pipeline-view") {
+    pipelineView = button.dataset.mode === "board" ? "board" : "table";
+    try { localStorage.setItem(VIEW_KEY, pipelineView); } catch (e) {}
+    pendingFocus = `[data-action="pipeline-view"][data-mode="${pipelineView}"]`;
+    render();
+  } else if (action === "goto-stage") {
+    stageFilter = button.dataset.stage || "all";
+    showView("pipeline");
+    render();
+  } else if (action === "goto-customers") {
+    customerFilter = button.dataset.status || "all";
+    showView("customers");
+    render();
+  } else if (action === "clear-samples") {
+    const ok = await askConfirm(
+      "Clear sample data",
+      "Northside Builders, Harbour Trades and Summit Construction will be removed. Your own records stay.",
+      "Clear sample data"
+    );
+    if (!ok) return;
+    data.leads = data.leads.filter(lead => !isSampleLead(lead));
+    data.customers = data.customers.filter(customer => !isSampleCustomer(customer));
+    try { localStorage.setItem(SAMPLES_KEY, "1"); } catch (e) {}
+    save();
+    toast("Sample data cleared.");
+  }
+});
+
+["modal-lead", "modal-customer", "confirm-dialog"].forEach(id => {
+  const dialog = document.getElementById(id);
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+    dialog.close(id === "confirm-dialog" ? "cancel" : "");
+  });
+  if (id === "confirm-dialog") {
+    dialog.addEventListener("cancel", () => { dialog.returnValue = "cancel"; });
+  }
+});
+document.getElementById("modal-lead").addEventListener("close", () => {
+  document.getElementById("l-name").setCustomValidity("");
+  document.getElementById("lead-form").reset();
+  document.getElementById("l-edit-index").value = "";
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+});
+document.getElementById("modal-customer").addEventListener("close", () => {
+  document.getElementById("c-name").setCustomValidity("");
+  document.getElementById("customer-form").reset();
+  document.getElementById("c-edit-index").value = "";
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+});
+
+document.getElementById("l-name").addEventListener("input", event => event.target.setCustomValidity(""));
+document.getElementById("c-name").addEventListener("input", event => event.target.setCustomValidity(""));
+
+document.getElementById("lead-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const name = requireName(document.getElementById("l-name"));
+  if (!name) return;
   const idx = document.getElementById("l-edit-index").value;
-  const item = {
-    name: document.getElementById("l-name").value.trim(),
+  const prev = idx !== "" && data.leads[idx] ? data.leads[idx] : {};
+  const item = Object.assign({}, prev, {
+    name,
     source: document.getElementById("l-source").value,
     segment: document.getElementById("l-segment").value,
     stage: document.getElementById("l-stage").value,
     next: document.getElementById("l-next").value.trim(),
     notes: document.getElementById("l-notes").value.trim(),
     ts: Date.now()
-  };
-  if (idx !== "") data.leads[idx] = item; else data.leads.push(item);
+  });
+  if (isSampleLead(prev)) item.sample = true;
+  if (idx !== "") data.leads[idx] = item;
+  else data.leads.push(item);
   save();
-  e.target.reset();
-  document.getElementById("l-edit-index").value = "";
-  closeModal();
+  closeDialog("modal-lead");
+  const heading = activeHeading();
+  if (heading) heading.focus();
 });
 
-document.getElementById("customer-form").addEventListener("submit", e => {
-  e.preventDefault();
+document.getElementById("customer-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const name = requireName(document.getElementById("c-name"));
+  if (!name) return;
   const idx = document.getElementById("c-edit-index").value;
-  const item = {
-    name: document.getElementById("c-name").value.trim(),
+  const prev = idx !== "" && data.customers[idx] ? data.customers[idx] : {};
+  const item = Object.assign({}, prev, {
+    name,
     status: document.getElementById("c-status").value,
     orgId: document.getElementById("c-org").value.trim(),
     firstValue: document.getElementById("c-value").value,
     risks: document.getElementById("c-risks").value.trim(),
     outcome: document.getElementById("c-outcome").value.trim(),
     ts: Date.now()
-  };
-  if (idx !== "") data.customers[idx] = item; else data.customers.push(item);
+  });
+  if (isSampleCustomer(prev)) item.sample = true;
+  if (idx !== "") data.customers[idx] = item;
+  else data.customers.push(item);
   save();
-  e.target.reset();
-  document.getElementById("c-edit-index").value = "";
-  closeModal();
+  closeDialog("modal-customer");
+  const heading = activeHeading();
+  if (heading) heading.focus();
 });
 
-document.getElementById("note-form").addEventListener("submit", e => {
-  e.preventDefault();
-  data.notes.push({ text: document.getElementById("note-input").value.trim(), ts: Date.now() });
+document.getElementById("note-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const text = document.getElementById("note-input").value.trim();
+  if (!text) return;
+  data.notes.push({ text, ts: Date.now() });
   save();
-  e.target.reset();
+  event.target.reset();
+  toast("Note saved.");
 });
 
-function editLead(i) {
-  const l = data.leads[i];
-  document.getElementById("l-edit-index").value = i;
-  document.getElementById("l-name").value = l.name;
-  document.getElementById("l-source").value = l.source;
-  document.getElementById("l-segment").value = l.segment;
-  document.getElementById("l-stage").value = l.stage;
-  document.getElementById("l-next").value = l.next || "";
-  document.getElementById("l-notes").value = l.notes || "";
-  openModal("lead", true);
+function editLead(index) {
+  const lead = data.leads[index];
+  if (!lead) return;
+  document.getElementById("l-edit-index").value = String(index);
+  document.getElementById("l-name").value = lead.name || "";
+  setSelect("l-source", lead.source);
+  setSelect("l-segment", lead.segment);
+  setSelect("l-stage", lead.stage);
+  document.getElementById("l-next").value = lead.next || "";
+  document.getElementById("l-notes").value = lead.notes || "";
+  document.getElementById("lead-modal-title").textContent = "Edit lead";
+  openDialog("modal-lead");
 }
-function editCustomer(i) {
-  const c = data.customers[i];
-  document.getElementById("c-edit-index").value = i;
-  document.getElementById("c-name").value = c.name;
-  document.getElementById("c-status").value = c.status;
-  document.getElementById("c-org").value = c.orgId || "";
-  document.getElementById("c-value").value = c.firstValue;
-  document.getElementById("c-risks").value = c.risks || "";
-  document.getElementById("c-outcome").value = c.outcome || "";
-  openModal("customer", true);
+function editCustomer(index) {
+  const customer = data.customers[index];
+  if (!customer) return;
+  document.getElementById("c-edit-index").value = String(index);
+  document.getElementById("c-name").value = customer.name || "";
+  setSelect("c-status", customer.status);
+  document.getElementById("c-org").value = customer.orgId || "";
+  setSelect("c-value", customer.firstValue || "no");
+  document.getElementById("c-risks").value = customer.risks || "";
+  document.getElementById("c-outcome").value = customer.outcome || "";
+  document.getElementById("cust-modal-title").textContent = "Edit customer";
+  openDialog("modal-customer");
 }
-function removeLead(i) { if (confirm("Remove this lead?")) { data.leads.splice(i,1); save(); } }
-function removeCustomer(i) { if (confirm("Remove this customer?")) { data.customers.splice(i,1); save(); } }
+function setSelect(id, value) {
+  const select = document.getElementById(id);
+  const exists = Array.from(select.options).some(option => option.value === value);
+  if (!exists && value) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  }
+  select.value = value || select.options[0].value;
+}
+
+async function removeLead(index) {
+  if (!data.leads[index]) return;
+  const ok = await askConfirm("Remove this lead?", "This lead will be deleted from the pipeline on this browser.", "Remove");
+  if (!ok) return;
+  data.leads.splice(index, 1);
+  save();
+}
+async function removeCustomer(index) {
+  if (!data.customers[index]) return;
+  const ok = await askConfirm("Remove this customer?", "This customer will be deleted from the list on this browser.", "Remove");
+  if (!ok) return;
+  data.customers.splice(index, 1);
+  save();
+}
 
 function exportCSV(type) {
   const rows = type === "leads" ? data.leads : data.customers;
-  if (!rows.length) return alert("Nothing to export");
+  if (!rows.length) {
+    toast("Nothing to export.");
+    return;
+  }
   const headers = type === "leads"
-    ? ["Name","Source","Segment","Stage","Next","Notes"]
-    : ["Name","Status","FirstValue","OrgID","Risks","Outcome"];
-  const csv = [headers.join(",")].concat(rows.map(r => headers.map(h => {
-    const key = h.toLowerCase().replace("firstvalue","firstValue").replace("orgid","orgId");
-    return `"${String(r[key]||"").replace(/"/g,'""')}"`;
+    ? ["Name", "Source", "Segment", "Stage", "Next", "Notes"]
+    : ["Name", "Status", "FirstValue", "OrgID", "Risks", "Outcome"];
+  const csv = [headers.join(",")].concat(rows.map(row => headers.map(header => {
+    const key = header.toLowerCase().replace("firstvalue", "firstValue").replace("orgid", "orgId");
+    return `"${String(row[key] || "").replace(/"/g, '""')}"`;
   }).join(","))).join("\n");
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = type + "-" + new Date().toISOString().slice(0,10) + ".csv";
-  a.click();
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = type + "-" + new Date().toISOString().slice(0, 10) + ".csv";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
-// Sample data on first load
-if (!data.leads.length && !data.customers.length) {
+try {
+  const storedView = localStorage.getItem(VIEW_KEY);
+  if (storedView === "board" || storedView === "table") pipelineView = storedView;
+} catch (e) {}
+
+const initialTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+applyTheme(initialTheme);
+
+let dismissed = false;
+try { dismissed = localStorage.getItem(SAMPLES_KEY) === "1"; } catch (e) {}
+if (!dismissed && !data.leads.length && !data.customers.length) {
   data.leads = [
-    {name:"Northside Builders", source:"Referral", segment:"10–50 staff builder", stage:"demo", next:"Follow up Thursday — send Blueprint outline", notes:"Owner frustrated with quoting delays", ts:Date.now()},
-    {name:"Harbour Trades", source:"Cadexus site", segment:"Trade contractor", stage:"qualified", next:"Book demo next week", notes:"Interested in site diary", ts:Date.now()}
+    { name: "Northside Builders", source: "Referral", segment: "10–50 staff builder", stage: "demo", next: "Follow up Thursday — send Blueprint outline", notes: "Owner frustrated with quoting delays", sample: true, ts: Date.now() },
+    { name: "Harbour Trades", source: "Cadexus site", segment: "Trade contractor", stage: "qualified", next: "Book demo next week", notes: "Interested in site diary", sample: true, ts: Date.now() }
   ];
   data.customers = [
-    {name:"Summit Construction", status:"onboarding", orgId:"org_abc123", firstValue:"no", risks:"Waiting on pricing library import", outcome:"", ts:Date.now()}
+    { name: "Summit Construction", status: "onboarding", orgId: "org_abc123", firstValue: "no", risks: "Waiting on pricing library import", outcome: "", sample: true, ts: Date.now() }
   ];
   save();
 } else {
   render();
 }
+
+window.matchMedia("(max-width: 800px)").addEventListener("change", () => render());
 </script>
 </body>
 </html>
