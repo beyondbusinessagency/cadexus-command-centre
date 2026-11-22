@@ -1,6 +1,6 @@
 # Command Centre OS
 
-Internal operating system for Cadexus. The partner owns and runs all of Cadexus. The founder helps him.
+Internal operating system for Cadexus.
 
 ## Live demo
 https://cadexus-command-centre-beyond-business.vercel.app
@@ -25,7 +25,7 @@ The stored object keeps `leads`, `customers` and `notes`. It also holds `activit
 
 ## Boundaries
 - Cadexus remains the source of truth for customer jobs, invoices and permissions.
-- This is the partner and founder decision layer. The partner runs Cadexus. The founder helps him.
+- This is the partner and founder decision layer.
 - Only record verified outcomes with customer permission.
 - The screen never invents a metric. If the records do not support a number, it says there is no data yet or that it is not tracked yet.
 
