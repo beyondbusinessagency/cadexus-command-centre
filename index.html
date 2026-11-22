@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f6f9fc">
-<meta name="description" content="Cadexus Command Centre. Pipeline, customers, decisions and the 90 day plan. The partner runs Cadexus. The founder helps him.">
+<meta name="description" content="Cadexus Command Centre. Pipeline, customers, decisions and the 90 day plan.">
 <title>Dashboard — Command Centre</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236e5424'/%3E%3Cpath d='M20.4 11.2a6.6 6.6 0 1 0 .05 9.6' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -304,7 +304,17 @@
   .form-grid .field { margin-bottom: 0; }
   input, select, textarea { width: 100%; height: 32px; padding: var(--space-1) var(--space-2); border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); }
   textarea { height: auto; min-height: 96px; resize: vertical; line-height: 1.5; }
-  select { appearance: none; background-image: var(--chevron); background-repeat: no-repeat; background-position: right var(--space-2) center; background-size: 16px 16px; padding-right: var(--space-4); }
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 44px;
+    line-height: calc(44px - 2px);
+    padding: 0 40px 0 16px;
+    background-image: var(--chevron);
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px 16px;
+  }
   input::placeholder, textarea::placeholder { color: var(--muted); }
   .modal-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
   .modal-head h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
@@ -342,6 +352,7 @@
   .plan-controls { display: flex; flex-wrap: wrap; gap: var(--space-1); flex: 0 0 auto; }
   .plan-controls select { width: auto; min-width: 148px; }
   .kicker { margin: var(--space-2) 0 var(--space-1); font-size: 12px; font-weight: 600; color: var(--muted); }
+  .plan-item .field { margin-top: var(--space-2); }
   .weeks { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
   .week { border-radius: var(--radius-lg); padding: var(--space-2); min-width: 0; }
   .week-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-1); margin-bottom: var(--space-1); }
@@ -421,6 +432,9 @@
     dialog.sheet { padding: var(--space-3); }
     .mobile-source { display: block; }
     .panel-head h3, .open-items { align-items: center; }
+    .modal-head { position: relative; justify-content: center; min-height: 32px; }
+    .modal-head h3 { flex: 1; text-align: center; padding-left: 40px; padding-right: 40px; }
+    .modal-head .icon-btn { position: absolute; top: 0; right: 0; }
     .field > span,
     .help,
     .kicker,
@@ -626,7 +640,6 @@
         <div class="page-head">
           <div>
             <h2 id="plan-title" tabindex="-1">90 Day Plan</h2>
-            <p class="sub">The partner owns and runs all of Cadexus. The founder helps him.</p>
           </div>
         </div>
         <div id="plan-body"></div>
