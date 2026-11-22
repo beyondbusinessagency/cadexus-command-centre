@@ -356,6 +356,21 @@
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .mobile-source { display: none; margin-top: var(--space-1); }
   #content:focus { outline: none; }
+  body { text-wrap: pretty; }
+  h1, h2, h3, h4,
+  .sub, .brand-name, .brand-sub, .metric-label, .metric-hint,
+  .empty, .empty-title, .empty-copy,
+  .banner, .banner p, .banner span,
+  .column-empty, .column-head, .day-line, .what, .group-label, .kicker,
+  .search-group h4, .search-launch, .footnote, .toast, .quiet, .help,
+  .btn, .nav-btn, .chip, button, .modal-head h3, .panel-head h3, .field > span {
+    text-wrap: balance;
+  }
+  th { text-wrap: balance; }
+  .keep-pair { white-space: nowrap; overflow-wrap: normal; }
+  td, .panel-note, .action-next, .deal-meta, .deal-next, .note p, .cell-sub, .wrap, dd, .backup-copy {
+    text-wrap: pretty;
+  }
   @media (min-width: 900px) {
     .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .weeks { grid-template-columns: 1fr 1fr; }
@@ -465,7 +480,6 @@
         <div class="page-head">
           <div>
             <h2 id="dashboard-title" tabindex="-1">Dashboard</h2>
-            <p class="sub">The partner owns and runs all of Cadexus. The founder helps him.</p>
             <p class="sub mobile-source">Cadexus stays the source of truth for jobs and invoices.</p>
           </div>
           <div class="toolbar">

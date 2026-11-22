@@ -843,26 +843,24 @@ function targetField(measure) {
 function renderSearch() {
   const query = document.getElementById("search-input").value.trim().toLowerCase();
   const box = document.getElementById("search-results");
-  if (!query) {
-    box.innerHTML = `<p class="quiet">Search by company, note, stage or source.</p>`;
-    return;
+  if (!query) box.innerHTML = `<p class="quiet">Search by company, note, stage or source.</p>`;
+  else {
+    const total = data.leads.length + data.customers.length + data.notes.length;
+    if (!total) box.innerHTML = emptyBlock("No data yet", "Add a lead, customer or note first.");
+    else {
+      const leads = data.leads.map((lead, index) => ({ lead, index })).filter(({ lead }) => blob([lead.name, lead.source, lead.segment, lead.stage, stageLabel(lead.stage), lead.next, lead.notes, lead.owner]).includes(query));
+      const customers = data.customers.map((customer, index) => ({ customer, index })).filter(({ customer }) => blob([customer.name, customer.status, statusLabel(customer.status), customer.orgId, customer.next, customer.risks, customer.outcome, customer.owner]).includes(query));
+      const notes = data.notes.map((note, index) => ({ note, index })).filter(({ note }) => blob([note.text]).includes(query));
+      if (!leads.length && !customers.length && !notes.length) box.innerHTML = emptyBlock("No matches", "Try a different company, note or stage.");
+      else {
+        const leadHtml = leads.map(({ lead, index }) => searchHit("lead", index, "Lead", lead.name, isSampleLead(lead), lead.next || lead.notes || lead.source)).join("");
+        const customerHtml = customers.map(({ customer, index }) => searchHit("customer", index, "Customer", customer.name, isSampleCustomer(customer), customer.outcome || customer.risks || customer.next || statusLabel(customer.status))).join("");
+        const noteHtml = notes.map(({ note, index }) => searchHit("note", index, "Note", snippet(note.text) || "Note", false, formatWhen(note.ts))).join("");
+        box.innerHTML = groupHtml("Leads", leadHtml) + groupHtml("Customers", customerHtml) + groupHtml("Notes", noteHtml);
+      }
+    }
   }
-  const total = data.leads.length + data.customers.length + data.notes.length;
-  if (!total) {
-    box.innerHTML = emptyBlock("No data yet", "Add a lead, customer or note first.");
-    return;
-  }
-  const leads = data.leads.map((lead, index) => ({ lead, index })).filter(({ lead }) => blob([lead.name, lead.source, lead.segment, lead.stage, stageLabel(lead.stage), lead.next, lead.notes, lead.owner]).includes(query));
-  const customers = data.customers.map((customer, index) => ({ customer, index })).filter(({ customer }) => blob([customer.name, customer.status, statusLabel(customer.status), customer.orgId, customer.next, customer.risks, customer.outcome, customer.owner]).includes(query));
-  const notes = data.notes.map((note, index) => ({ note, index })).filter(({ note }) => blob([note.text]).includes(query));
-  if (!leads.length && !customers.length && !notes.length) {
-    box.innerHTML = emptyBlock("No matches", "Try a different company, note or stage.");
-    return;
-  }
-  const leadHtml = leads.map(({ lead, index }) => searchHit("lead", index, "Lead", lead.name, isSampleLead(lead), lead.next || lead.notes || lead.source)).join("");
-  const customerHtml = customers.map(({ customer, index }) => searchHit("customer", index, "Customer", customer.name, isSampleCustomer(customer), customer.outcome || customer.risks || customer.next || statusLabel(customer.status))).join("");
-  const noteHtml = notes.map(({ note, index }) => searchHit("note", index, "Note", snippet(note.text) || "Note", false, formatWhen(note.ts))).join("");
-  box.innerHTML = groupHtml("Leads", leadHtml) + groupHtml("Customers", customerHtml) + groupHtml("Notes", noteHtml);
+  if (document.getElementById("modal-search").open) balanceShortText();
 }
 function blob(parts) { return parts.map(part => String(part || "")).join(" ").toLowerCase(); }
 function groupHtml(title, html) { return html ? `<section class="search-group"><h4>${esc(title)}</h4>${html}</section>` : ""; }
@@ -870,6 +868,158 @@ function searchHit(kind, index, kindLabel, title, sample, detail) {
   return `<button type="button" class="search-hit" data-action="search-open" data-kind="${kind}" data-index="${index}"><span class="status neutral">${esc(kindLabel)}</span><span><span class="name-line">${esc(title)}${sampleBadge(sample)}</span><span class="cell-sub">${esc(snippet(detail))}</span></span></button>`;
 }
 function renderBanner() { document.getElementById("sample-banner").hidden = !hasSamples(); }
+
+const originalText = new WeakMap();
+const pairHosts = new WeakMap();
+let balanceFrame = 0;
+const BALANCE_SELECTOR = [
+  "h1", "h2", "h3", "h4", "p", "li", "dd", "th", "td",
+  ".sub", ".brand-name", ".brand-sub", ".metric-label", ".metric-hint",
+  ".empty-title", ".empty-copy", ".banner span", ".column-empty", ".day-line", ".what",
+  ".group-label", ".kicker", ".footnote", ".toast", ".quiet", ".help", ".cell-sub",
+  ".action-next", ".action-name", ".deal-meta", ".deal-next", ".panel-note",
+  ".search-launch > span", ".nav-btn", ".field > span"
+].join(",");
+
+function textWrapSupported() {
+  return !!(window.CSS && CSS.supports && CSS.supports("text-wrap", "balance") && CSS.supports("text-wrap", "pretty"));
+}
+function scheduleBalance() {
+  cancelAnimationFrame(balanceFrame);
+  balanceFrame = requestAnimationFrame(balanceShortText);
+}
+function sourceText(node) {
+  if (!originalText.has(node)) originalText.set(node, node.textContent);
+  return originalText.get(node);
+}
+function lastTextNode(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || !/\S/.test(node.textContent)) return NodeFilter.FILTER_REJECT;
+      if (parent.closest("svg, kbd, script, style, textarea, .sr-only")) return NodeFilter.FILTER_REJECT;
+      const space = getComputedStyle(parent).whiteSpace;
+      if (space === "nowrap" || space === "pre") return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  let last = null;
+  while (walker.nextNode()) last = walker.currentNode;
+  return last;
+}
+function lineBoxes(node) {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const lines = [];
+  Array.from(range.getClientRects()).forEach(rect => {
+    if (rect.width < 0.5 || rect.height < 0.5) return;
+    const found = lines.find(line => Math.abs(line.top - rect.top) < Math.max(2, rect.height * 0.4));
+    if (found) {
+      found.left = Math.min(found.left, rect.left);
+      found.right = Math.max(found.right, rect.right);
+    } else lines.push({ top: rect.top, left: rect.left, right: rect.right, height: rect.height });
+  });
+  return lines;
+}
+function singleWordLastLine(node) {
+  const text = node.textContent;
+  const match = text.match(/(\S+)\s*$/);
+  if (!match) return false;
+  const start = text.lastIndexOf(match[1]);
+  if (start <= 0 || !/\S/.test(text.slice(0, start))) return false;
+  const lines = lineBoxes(node);
+  if (lines.length < 2) return false;
+  const word = document.createRange();
+  word.setStart(node, start);
+  word.setEnd(node, start + match[1].length);
+  const rects = Array.from(word.getClientRects()).filter(rect => rect.width > 0.5 && rect.height > 0.5);
+  if (rects.length !== 1) return false;
+  const last = lines[lines.length - 1];
+  if (Math.abs(rects[0].top - last.top) > Math.max(2, last.height * 0.4)) return false;
+  return last.right - last.left <= rects[0].width + 3;
+}
+function glueLastWords(text) {
+  const match = text.match(/^([\s\S]*\S)([ \t]+)(\S+)(\s*)$/);
+  if (!match || !/\S/.test(match[1])) return text;
+  return match[1] + "\u00A0" + match[3] + match[4];
+}
+function cutOff(el) {
+  let node = el;
+  const style = getComputedStyle(node);
+  if (style.display === "inline" || style.display === "contents") node = node.parentElement;
+  if (!node) return false;
+  return node.scrollWidth > node.clientWidth + 2;
+}
+function shortCopy(el) {
+  const text = (el.innerText || "").replace(/\s+/g, " ").trim();
+  if (!text || text.length > 180 || !/\S\s+\S/.test(text)) return false;
+  const align = getComputedStyle(el).textAlign;
+  if (align === "center") return true;
+  return el.matches("h1, h2, h3, h4, .sub, .empty-title, .empty-copy, .banner span, .metric-label, .metric-hint, .day-line, .what, .column-empty, .quiet, .help, .footnote, .toast, .kicker, .group-label, .brand-name, .brand-sub, .search-launch > span, .nav-btn, .field > span, button");
+}
+function plainTextHost(el) {
+  return !!el && Array.from(el.childNodes).every(node => node.nodeType === 3 || (node.nodeType === 1 && node.classList.contains("keep-pair")));
+}
+function restorePairs() {
+  document.querySelectorAll(".keep-pair").forEach(span => {
+    const host = span.parentElement;
+    if (!host || !pairHosts.has(host) || !plainTextHost(host)) return;
+    host.textContent = pairHosts.get(host);
+  });
+}
+function insertPair(host, text) {
+  const normalized = text.replace(/\u00A0/g, " ");
+  const match = normalized.match(/^([\s\S]*\S)([ \t]+)(\S+)(\s*)$/);
+  if (!match) return null;
+  const words = match[1].match(/^([\s\S]*?)(\S+)$/);
+  if (!words) return null;
+  if (!pairHosts.has(host)) pairHosts.set(host, text);
+  host.textContent = "";
+  if (words[1]) host.appendChild(document.createTextNode(words[1]));
+  const span = document.createElement("span");
+  span.className = "keep-pair";
+  span.textContent = words[2] + "\u00A0" + match[3];
+  host.appendChild(span);
+  if (match[4]) host.appendChild(document.createTextNode(match[4]));
+  return span;
+}
+function balanceElement(el, seen) {
+  if (!el || el.closest("[hidden]")) return;
+  const style = getComputedStyle(el);
+  if (style.display === "none" || style.visibility === "hidden") return;
+  if (!el.getClientRects().length) return;
+  const node = lastTextNode(el);
+  if (!node || seen.has(node)) return;
+  seen.add(node);
+  const original = sourceText(node);
+  if (node.textContent !== original) node.textContent = original;
+  const orphan = singleWordLastLine(node);
+  const fallback = !textWrapSupported() && shortCopy(el);
+  if (!orphan && !fallback) return;
+  const next = glueLastWords(original);
+  if (next === original) return;
+  const before = lineBoxes(node).length;
+  const host = node.parentElement || el;
+  const beforeCut = cutOff(host);
+  node.textContent = next;
+  const brokeApart = singleWordLastLine(node);
+  if ((!beforeCut && cutOff(host)) || lineBoxes(node).length > before) {
+    node.textContent = original;
+    return;
+  }
+  if (!brokeApart) return;
+  node.textContent = original;
+  if (!plainTextHost(host)) return;
+  const span = insertPair(host, original);
+  if (!span) return;
+  const pairWider = span.getBoundingClientRect().width > host.clientWidth + 2;
+  if (pairWider || (!beforeCut && cutOff(host))) host.textContent = original;
+}
+function balanceShortText() {
+  restorePairs();
+  const seen = new Set();
+  document.querySelectorAll(BALANCE_SELECTOR).forEach(el => balanceElement(el, seen));
+}
 function render() {
   renderBanner();
   renderMetrics();
@@ -892,6 +1042,7 @@ function render() {
     const el = document.querySelector(selector);
     if (el) el.focus();
   }
+  balanceShortText();
 }
 function showView(id) {
   document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view.id === id));
@@ -902,6 +1053,7 @@ function showView(id) {
     else button.removeAttribute("aria-current");
   });
   document.title = (TITLES[id] || "Command Centre") + " — Command Centre";
+  balanceShortText();
 }
 function activeHeading() {
   const view = document.querySelector(".view.active");
@@ -913,6 +1065,7 @@ function openDialog(id) {
   if (!dialog.open) dialog.showModal();
   const field = dialog.querySelector("input:not([type='hidden']), select, textarea");
   if (field) field.focus();
+  balanceShortText();
 }
 function closeDialog(id) {
   const dialog = document.getElementById(id);
@@ -941,12 +1094,14 @@ function askConfirm(title, message, confirmLabel) {
     };
     dialog.addEventListener("close", onClose);
     dialog.showModal();
+    balanceShortText();
   });
 }
 function toast(message) {
   const el = document.getElementById("toast");
   el.textContent = message;
   el.hidden = false;
+  balanceShortText();
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
 }
@@ -1390,3 +1545,5 @@ if (!dismissed && !data.leads.length && !data.customers.length) {
   render();
 }
 window.matchMedia("(max-width: 800px)").addEventListener("change", () => render());
+window.addEventListener("resize", scheduleBalance);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => balanceShortText());
