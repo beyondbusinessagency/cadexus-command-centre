@@ -22,8 +22,8 @@ const FUNNEL_ORDER = { new: 0, qualified: 1, demo: 2, proposal: 3, won: 4 };
 const TITLES = { dashboard: "Dashboard", pipeline: "Pipeline", customers: "Customers", notes: "Decisions", plan: "90 Day Plan" };
 const PLAN_PHASES = [
   { id: 1, name: "Foundation", range: "Days 1 to 30", start: 1, end: 30 },
-  { id: 2, name: "Prove and repeat", range: "Days 31 to 60", start: 31, end: 60 },
-  { id: 3, name: "Expand", range: "Days 61 to 90", start: 61, end: 90 }
+  { id: 2, name: "Activation", range: "Days 31 to 60", start: 31, end: 60 },
+  { id: 3, name: "Optimisation", range: "Days 61 to 90", start: 61, end: 90 }
 ];
 const PLAN_STATUSES = [
   { id: "not-started", label: "Not started" },
@@ -31,8 +31,8 @@ const PLAN_STATUSES = [
   { id: "done", label: "Done" }
 ];
 const PLAN_ITEMS = [
-  { id: "help", phase: 1, weeks: [1, 1], what: "Agree how I help, the definition of first value and the blank targets in this plan (week 1).", why: "Agreeing where I help means I can take sales and follow-ups off your plate without pulling you into every deal, and you can run delivery without me second guessing it. One shared definition of first value means the Command Centre means the same thing to both of us.", doneWhen: "A one page agreement you are happy with. First value defined in one sentence. Every Target: ___ in this plan filled in." },
-  { id: "playbook", phase: 1, weeks: [1, 2], what: "Write the onboarding playbook from trial start to first value (weeks 1 to 2).", why: "Cadexus promises early access members guided onboarding to migrate their pricing and job data. The trial converts at day 14, so customers need to see value inside that window. A written playbook makes the promise repeatable and lets me tell every prospect exactly what their first two weeks look like.", doneWhen: "A checklist covering pricing library import, templates, first quote and first job. Each step has a person responsible and a day number." },
+  { id: "help", phase: 1, weeks: [1, 1], business: "shared", what: "Agree the operating partnership, first-value definition and baseline measures.", why: "The shared system needs clear ownership and one definition of progress across both businesses.", doneWhen: "Responsibilities agreed, first value defined for Cadexus and PlanDepa baseline measures identified." },
+  { id: "playbook", phase: 1, weeks: [1, 2], business: "cadexus", what: "Write Cadexus’s 14-day onboarding playbook from sign-up to first value.", why: "The trial is an onboarding journey, so customers need to reach a meaningful trade workflow before day 14.", doneWhen: "Steps and owners recorded for day 0 trade and workflow, day 1 setup, day 3 template, day 5 first quote, day 7 checkpoint, day 10 workflow proof, day 12 recap and day 14 conversion." },
   { id: "log-customers", phase: 1, weeks: [2, 2], what: "Log every current customer in the Command Centre (week 2).", why: "I can see account health without asking you for updates, and at-risk accounts show up before they cancel.", doneWhen: "Every current account has a record with status, Cadexus org ID, first value and risks. Sample records cleared." },
   { id: "handover", phase: 1, weeks: [3, 3], what: "Set the handover from sale to onboarding (week 3).", why: "The gap between yes and getting started is where trust is easiest to lose. A clear handover means every new customer reaches you with the context you need and nothing falls through.", doneWhen: "Handover rule written in the Decisions log: when a lead moves to Won you start onboarding within ___ days. Used on the next won deal." },
   { id: "blockers", phase: 1, weeks: [3, 4], what: "Rank and fix the top three blockers (weeks 3 to 4).", why: "Customers who stall or leave cost more than any lead I can bring in. Each blocker removed also makes the next demo easier.", doneWhen: "Top three risks logged with a person responsible and a date. Each one fixed or scheduled." },
@@ -46,23 +46,42 @@ const PLAN_ITEMS = [
   { id: "referrals", phase: 3, weeks: [10, 10], what: "Ask happy customers for referrals at the right moment.", why: "Trades talk to trades. A referral after a verified result is the cheapest and warmest lead Cadexus can get.", doneWhen: "Every customer with a verified outcome has been asked. Referrals are logged as leads with source Referral and I follow them up for you." },
   { id: "grow", phase: 3, weeks: [10, 10], what: "Grow within existing accounts when the customer needs it.", why: "Moving from Gold to Platinum, adding seats or adding rostering grows revenue without new sales effort. It only works when it follows real value, so it sits with you.", doneWhen: "A list of accounts where an upgrade genuinely fits, the conversation held and the result logged." },
   { id: "scale", phase: 3, weeks: [11, 11], what: "Make onboarding scale.", why: "If every new customer needs the same hours from you, growth stops at your calendar. Trade templates and a tight playbook let you onboard more customers at once.", doneWhen: "Templates for each trade Cadexus serves. Onboarding capacity agreed. Target: ___ new customers per month." },
-  { id: "review", phase: 3, weeks: [12, 12], what: "Hold the day 90 review.", why: "We judge the plan on what the Command Centre shows, not on feel, and you set the next 90 days from there.", doneWhen: "Review held, measures compared with targets and the next 90 day plan agreed." }
+  { id: "review", phase: 3, weeks: [12, 12], business: "shared", what: "Hold the day 90 review.", why: "We judge the plan on measured lead, customer and conversion outcomes across both businesses.", doneWhen: "Day 90 review held, measures compared with baselines and the next 90-day priorities agreed." },
+  { id: "audit-assets", phase: 1, weeks: [1, 2], business: "shared", what: "Map the existing offers, assets, website paths, tools and tracking for both businesses.", why: "The two funnels need distinct offers and conversion paths, with a shared operational foundation.", doneWhen: "Current PlanDepa diagnostics and Cadexus trial paths are inventoried with gaps, owners and baseline tracking needs." },
+  { id: "plandepa-capture", phase: 1, weeks: [2, 3], business: "plandepa", what: "Connect PlanDepa’s diagnostic assets to lead capture and qualification.", why: "The Can't Leave For A Week Test and Admin Cost Calculator should turn a real operational problem into a qualified opportunity.", doneWhen: "Assessment results, contact details, business context, pain, urgency and fit have a defined capture path into the PlanDepa pipeline." },
+  { id: "trade-demos", phase: 1, weeks: [3, 4], business: "cadexus", what: "Build the trade-specific product demonstration library.", why: "Builders, electricians, plumbers, carpenters and other trades need to see their own workflow in Cadexus.", doneWhen: "Demonstrations cover relevant quote, job, schedule, site diary, RFQ and invoice workflows for each priority trade." },
+  { id: "shared-tracking", phase: 1, weeks: [3, 4], business: "shared", what: "Connect lead sources, baseline analytics, the Command Centre and first automations.", why: "One operational backbone makes follow-up, conversion, activation and blockers visible without blending the two funnels.", doneWhen: "Separate PlanDepa and Cadexus pipelines are usable, key sources are connected, baselines are recorded and the first event-based follow-up automation is working." },
+  { id: "plandepa-campaign", phase: 2, weeks: [5, 6], business: "plandepa", what: "Launch acquisition around the PlanDepa diagnostics and qualified fit calls.", why: "The test and calculator should attract construction businesses with a specific operational problem and lead toward a paid Blueprint.", doneWhen: "A live acquisition path captures diagnostic completion, qualification and the next fit-call or Blueprint action." },
+  { id: "content-loop", phase: 2, weeks: [5, 7], business: "shared", what: "Create and distribute founder-led content from real problems and workflows.", why: "Real demonstrations and implementation work create relevant demand and usable proof for both businesses.", doneWhen: "A repeatable capture, package, distribute, convert and learn loop is running across the selected channels, with qualified actions tracked." },
+  { id: "cadexus-acquisition", phase: 2, weeks: [6, 8], business: "cadexus", what: "Launch trade-specific Cadexus demos and trial acquisition.", why: "Trade workflow demonstrations make the product relevant before asking a prospect to start a trial.", doneWhen: "Priority trade campaigns and demo paths are live, with acquisition channel and trade recorded for each lead." },
+  { id: "plandepa-proof", phase: 3, weeks: [9, 10], business: "plandepa", what: "Capture permission-based PlanDepa implementation outcomes and turn them into proof.", why: "Verified results can support case studies, demonstrations, founder content, sales conversations and referrals.", doneWhen: "Each completed implementation has a customer-confirmed outcome and permission status. Approved proof is packaged for agreed uses." },
+  { id: "funnel-review", phase: 3, weeks: [9, 11], business: "shared", what: "Review conversion and friction across both growth engines, then refine the system.", why: "The strongest next improvements come from real lead quality, Blueprint conversion, trial activation and customer behaviour.", doneWhen: "PlanDepa lead quality and Blueprint conversion plus Cadexus activation and trial conversion by trade are reviewed. Changes target the observed drop-off points." }
 ];
 const PLAN_WEEKS = [
-  { week: 1, text: "How I help, first value and targets agreed. First weekly sync held." },
-  { week: 2, text: "Onboarding playbook drafted. Every customer logged in the Command Centre." },
-  { week: 3, text: "Handover rule set and recorded. Top risks ranked." },
-  { week: 4, text: "Top three blockers fixed or scheduled. Day 30 check on how the split is working." },
-  { week: 5, text: "Every onboarding customer has a path to first value." },
-  { week: 6, text: "30 day check-ins under way. First verified outcome requested." },
-  { week: 7, text: "Playbook version 2. Time to first value measured." },
-  { week: 8, text: "Proof points by segment handed to me. Day 60 review." },
-  { week: 9, text: "First case study drafted and sent for customer approval." },
-  { week: 10, text: "Referral asks made. Upgrade fit list built." },
-  { week: 11, text: "Trade templates done. Onboarding capacity agreed." },
-  { week: 12, text: "Day 90 review. Next 90 day plan set." }
+  { week: 1, text: "Map the offers, assets, conversion paths, first-value events and shared ownership." },
+  { week: 2, text: "Set up separate pipelines, customer records and baseline measurement." },
+  { week: 3, text: "Connect PlanDepa diagnostics to qualification and CRM capture." },
+  { week: 4, text: "Finish the trade demo library, first automations and day 30 foundation review." },
+  { week: 5, text: "Launch PlanDepa diagnostic acquisition and start the founder content loop." },
+  { week: 6, text: "Launch Cadexus trade demos and trial acquisition. Check early activation." },
+  { week: 7, text: "Run the 14-day onboarding journey and measure first value." },
+  { week: 8, text: "Review day 60 lead, demo, Blueprint and trial conversion by segment." },
+  { week: 9, text: "Refine PlanDepa messaging around the strongest qualified pain points." },
+  { week: 10, text: "Capture verified outcomes, approved proof and customer referral triggers." },
+  { week: 11, text: "Improve onboarding around observed drop-offs and prepare the next experiments." },
+  { week: 12, text: "Hold the day 90 review and agree the next measured priorities." }
 ];
 const MEASURES = [
+  { id: "pd-leads", name: "PlanDepa leads", detail: "Current leads assigned to the PlanDepa growth path." },
+  { id: "pd-qualified", name: "PlanDepa qualified leads", detail: "Current PlanDepa leads at the qualified stage." },
+  { id: "pd-blueprints", name: "PlanDepa Blueprint opportunities", detail: "Current PlanDepa leads at Proposal / Blueprint stage." },
+  { id: "pd-won", name: "PlanDepa wins", detail: "Current PlanDepa leads at Won stage; confirm implementation revenue separately." },
+  { id: "cd-leads", name: "Cadexus leads", detail: "Current leads assigned to the Cadexus growth path." },
+  { id: "cd-demos", name: "Cadexus demos", detail: "Current Cadexus leads at the demo stage, by source and trade segment." },
+  { id: "cd-won", name: "Cadexus wins", detail: "Current Cadexus leads at Won stage." },
+  { id: "cd-trials", name: "Cadexus trials", detail: "Customer records explicitly marked Trial in billing status." },
+  { id: "cd-paid", name: "Cadexus paid customers", detail: "Customer records explicitly marked Paid in billing status." },
+  { id: "cd-trial-paid", name: "Cadexus trial to paid", detail: "Paid customers divided by currently tracked Trial and Paid accounts." },
   { id: "ttfv", name: "Time to first value", detail: "Days from onboarding start to the agreed first value event." },
   { id: "trial", name: "First value in trial", detail: "Share of new customers who reach first value inside the 14 day trial." },
   { id: "handover", name: "Handover time", detail: "Days from a lead moving to Won to onboarding starting." },
@@ -75,6 +94,7 @@ const MEASURES = [
 
 let stageFilter = "all";
 let customerFilter = "all";
+let businessFilter = "all";
 let pipelineView = "table";
 let pendingFocus = null;
 let lastFocus = null;
@@ -110,8 +130,17 @@ function migrate(parsed) {
   if (!Array.isArray(parsed.customers)) parsed.customers = [];
   if (!Array.isArray(parsed.notes)) parsed.notes = [];
   if (!Array.isArray(parsed.activity)) parsed.activity = [];
-  parsed.leads.forEach(stampRecord);
-  parsed.customers.forEach(stampRecord);
+  parsed.leads.forEach(lead => {
+    stampRecord(lead);
+    if (lead.business !== "plandepa" && lead.business !== "cadexus") {
+      lead.business = lead.source === "PlanDepa site" ? "plandepa" : lead.source === "Cadexus site" || lead.sample === true ? "cadexus" : "unassigned";
+    }
+  });
+  parsed.customers.forEach(customer => {
+    stampRecord(customer);
+    if (typeof customer.trade !== "string") customer.trade = "";
+    if (typeof customer.billingStatus !== "string") customer.billingStatus = "";
+  });
   parsed.notes.forEach(note => {
     if (!note || typeof note !== "object" || Array.isArray(note)) return;
     if (!note.id) note.id = uid();
@@ -227,6 +256,12 @@ function statusLabel(id) {
 function knownClass(id, allowed) { return allowed.has(id) ? id : "unknown"; }
 function badge(className, label) { return `<span class="status ${esc(className)}">${esc(label)}</span>`; }
 function sampleBadge(on) { return on ? '<span class="badge sample">Sample</span>' : ""; }
+function businessBadge(business) { return badge("neutral", business === "plandepa" ? "PlanDepa" : business === "cadexus" ? "Cadexus" : "Needs assignment"); }
+function planBusinessBadge(item) {
+  const business = item.business || (["help", "review"].includes(item.id) ? "shared" : "cadexus");
+  const label = business === "plandepa" ? "PlanDepa" : business === "shared" ? "Shared systems" : "Cadexus";
+  return badge("neutral", label);
+}
 function isSampleLead(lead) {
   if (!lead || typeof lead !== "object") return false;
   if (lead.sample === true) return true;
@@ -419,6 +454,23 @@ function currentExpansion() {
   return withSampleNote(listAnd(parts), rows.some(isSampleCustomer));
 }
 function measureCurrent(id) {
+  const planDepaLeads = data.leads.filter(lead => lead.business === "plandepa");
+  const cadexusLeads = data.leads.filter(lead => lead.business === "cadexus");
+  if (id === "pd-leads") return String(planDepaLeads.length);
+  if (id === "pd-qualified") return String(planDepaLeads.filter(lead => lead.stage === "qualified").length);
+  if (id === "pd-blueprints") return String(planDepaLeads.filter(lead => lead.stage === "proposal").length);
+  if (id === "pd-won") return String(planDepaLeads.filter(lead => lead.stage === "won").length);
+  if (id === "cd-leads") return String(cadexusLeads.length);
+  if (id === "cd-demos") return String(cadexusLeads.filter(lead => lead.stage === "demo").length);
+  if (id === "cd-won") return String(cadexusLeads.filter(lead => lead.stage === "won").length);
+  if (id === "cd-trials") return data.customers.some(customer => ["trial", "paid", "churned"].includes(customer.billingStatus)) ? String(data.customers.filter(customer => customer.billingStatus === "trial").length) : "Not tracked yet";
+  if (id === "cd-paid") return data.customers.some(customer => ["trial", "paid", "churned"].includes(customer.billingStatus)) ? String(data.customers.filter(customer => customer.billingStatus === "paid").length) : "Not tracked yet";
+  if (id === "cd-trial-paid") {
+    const tracked = data.customers.filter(customer => ["trial", "paid"].includes(customer.billingStatus));
+    if (!tracked.length) return "Not tracked yet";
+    const paid = tracked.filter(customer => customer.billingStatus === "paid").length;
+    return paid + " of " + tracked.length + " (" + Math.round(paid / tracked.length * 100) + "%)";
+  }
   if (id === "ttfv") return currentTimeToValue();
   if (id === "trial") return currentTrial();
   if (id === "handover") return currentHandover();
@@ -519,6 +571,34 @@ function renderMetrics() {
     if (card.focus) attrs.push(`data-focus="${esc(card.focus)}"`);
     return `<button type="button" class="metric" ${attrs.join(" ")}>${inner}</button>`;
   }).join("");
+}
+function renderGrowthEngines() {
+  const planDepa = data.leads.filter(lead => lead.business === "plandepa");
+  const cadexus = data.leads.filter(lead => lead.business === "cadexus");
+  const unassigned = data.leads.filter(lead => lead.business !== "plandepa" && lead.business !== "cadexus");
+  const customerCount = status => data.customers.filter(customer => customer.status === status).length;
+  const billingTracked = data.customers.some(customer => ["trial", "paid", "churned"].includes(customer.billingStatus));
+  const trialCount = data.customers.filter(customer => customer.billingStatus === "trial").length;
+  const paidCount = data.customers.filter(customer => customer.billingStatus === "paid").length;
+  const firstValue = data.customers.filter(customer => customer.firstValue === "yes").length;
+  const card = (name, description, stats) => `<article class="engine-card"><h4>${esc(name)}</h4><p class="sub">${esc(description)}</p><div class="engine-stats">${stats.map(([label, value]) => `<div class="engine-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("")}</div></article>`;
+  document.getElementById("growth-engines").innerHTML =
+    card("PlanDepa", "Diagnostics to Clarity Blueprints and implementation.", [
+      ["Leads", planDepa.length],
+      ["Qualified", planDepa.filter(lead => lead.stage === "qualified").length],
+      ["Blueprint / proposal", planDepa.filter(lead => lead.stage === "proposal").length],
+      ["Won", planDepa.filter(lead => lead.stage === "won").length]
+    ]) +
+    card("Cadexus", "Trade demos to customer activation and value.", [
+      ["Leads", cadexus.length],
+      ["Demos", cadexus.filter(lead => lead.stage === "demo").length],
+      ["Won", cadexus.filter(lead => lead.stage === "won").length],
+      ["Trial", billingTracked ? trialCount : "Not tracked"],
+      ["Paid", billingTracked ? paidCount : "Not tracked"],
+      ["First value", firstValue],
+      ["At risk", customerCount("risk")]
+    ]) +
+    (unassigned.length ? card("Needs assignment", "Leads without a confirmed business.", [["Leads", unassigned.length]]) : "");
 }
 function renderPlanCard() {
   const host = document.getElementById("plan-card");
@@ -704,9 +784,10 @@ function activityText(event) {
   return "Activity recorded";
 }
 function renderStageChips() {
+  const businessLeads = data.leads.filter(lead => businessFilter === "all" || lead.business === businessFilter);
   const filters = [{ id: "all", label: "All" }, { id: "open", label: "Open" }].concat(STAGES);
   document.getElementById("stage-chips").innerHTML = filters.map(filter => {
-    const count = filter.id === "all" ? data.leads.length : filter.id === "open" ? data.leads.filter(lead => lead.stage !== "won" && lead.stage !== "lost").length : data.leads.filter(lead => lead.stage === filter.id).length;
+    const count = filter.id === "all" ? businessLeads.length : filter.id === "open" ? businessLeads.filter(lead => lead.stage !== "won" && lead.stage !== "lost").length : businessLeads.filter(lead => lead.stage === filter.id).length;
     return `<button type="button" class="chip" data-action="stage-filter" data-stage="${filter.id}" aria-pressed="${stageFilter === filter.id ? "true" : "false"}">${filter.label}<span class="chip-count">${count}</span></button>`;
   }).join("");
   document.querySelectorAll('[data-action="pipeline-view"]').forEach(button => {
@@ -715,6 +796,7 @@ function renderStageChips() {
 }
 function filteredLeads() {
   return data.leads.map((lead, index) => ({ lead, index })).filter(({ lead }) => {
+    if (businessFilter !== "all" && lead.business !== businessFilter) return false;
     if (stageFilter === "all") return true;
     if (stageFilter === "open") return lead.stage !== "won" && lead.stage !== "lost";
     return lead.stage === stageFilter;
@@ -735,6 +817,7 @@ function renderPipeline() {
   const tools = document.getElementById("pipeline-tools");
   const panel = document.getElementById("pipeline-panel");
   tools.hidden = data.leads.length === 0;
+  document.getElementById("business-filter").value = businessFilter;
   renderStageChips();
   if (!data.leads.length) {
     panel.classList.remove("as-cards");
@@ -751,16 +834,16 @@ function renderPipeline() {
     const extra = rows.filter(({ lead }) => !STAGE_IDS.has(lead.stage));
     const columns = STAGES.map(stage => ({ id: stage.id, label: stage.label, rows: rows.filter(({ lead }) => lead.stage === stage.id) }));
     if (extra.length && (stageFilter === "all" || stageFilter === "open")) columns.push({ id: "other", label: "Other", rows: extra });
-    panel.innerHTML = `<div class="board">${columns.map(column => `<section class="column" aria-label="${esc(column.label)}"><div class="column-head"><h3>${esc(column.label)}</h3><span class="column-count">${column.rows.length}</span></div>${column.rows.length ? column.rows.map(({ lead, index }) => `<article class="deal"><div class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</div><p class="deal-meta">${esc(lead.segment || "No segment")}</p><p class="deal-meta">${esc(lead.source || "No source")}</p>${lead.next ? `<p class="deal-next">${esc(lead.next)}</p>` : ""}${leadExtra(lead).map(bit => `<p class="deal-meta num">${esc(bit)}</p>`).join("")}${leadActions(index)}</article>`).join("") : `<p class="column-empty">No leads</p>`}</section>`).join("")}</div>`;
+    panel.innerHTML = `<div class="board">${columns.map(column => `<section class="column" aria-label="${esc(column.label)}"><div class="column-head"><h3>${esc(column.label)}</h3><span class="column-count">${column.rows.length}</span></div>${column.rows.length ? column.rows.map(({ lead, index }) => `<article class="deal"><div class="name-line">${esc(lead.name)}${businessBadge(lead.business)}${sampleBadge(isSampleLead(lead))}</div><p class="deal-meta">${esc(lead.segment || "No segment")}</p><p class="deal-meta">${esc(lead.source || "No source")}</p>${lead.next ? `<p class="deal-next">${esc(lead.next)}</p>` : ""}${leadExtra(lead).map(bit => `<p class="deal-meta num">${esc(bit)}</p>`).join("")}${leadActions(index)}</article>`).join("") : `<p class="column-empty">No leads</p>`}</section>`).join("")}</div>`;
     return;
   }
   if (isMobile()) {
     panel.classList.add("as-cards");
-    panel.innerHTML = `<div class="records">${rows.map(({ lead, index }) => `<article class="record"><div class="record-head"><h3 class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</h3>${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}</div><dl><div><dt>Source</dt><dd>${dash(lead.source)}</dd></div><div><dt>Segment</dt><dd>${dash(lead.segment)}</dd></div><div><dt>Next action</dt><dd>${dash(lead.next)}</dd></div><div><dt>Due</dt><dd>${dash(formatDate(lead.due))}</dd></div><div><dt>Owner</dt><dd>${dash(lead.owner)}</dd></div><div><dt>Deal value</dt><dd class="num">${numericValue(lead.value) == null ? "—" : esc(formatMoney(numericValue(lead.value)))}</dd></div></dl>${leadActions(index)}</article>`).join("")}</div>`;
+    panel.innerHTML = `<div class="records">${rows.map(({ lead, index }) => `<article class="record"><div class="record-head"><h3 class="name-line">${esc(lead.name)}${businessBadge(lead.business)}${sampleBadge(isSampleLead(lead))}</h3>${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}</div><dl><div><dt>Source</dt><dd>${dash(lead.source)}</dd></div><div><dt>Segment</dt><dd>${dash(lead.segment)}</dd></div><div><dt>Next action</dt><dd>${dash(lead.next)}</dd></div><div><dt>Due</dt><dd>${dash(formatDate(lead.due))}</dd></div><div><dt>Owner</dt><dd>${dash(lead.owner)}</dd></div><div><dt>Deal value</dt><dd class="num">${numericValue(lead.value) == null ? "—" : esc(formatMoney(numericValue(lead.value)))}</dd></div></dl>${leadActions(index)}</article>`).join("")}</div>`;
     return;
   }
   panel.classList.remove("as-cards");
-  panel.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Company</th><th>Source</th><th>Segment</th><th>Stage</th><th>Next action</th><th>Due</th><th>Owner</th><th>Value</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows.map(({ lead, index }) => `<tr><td><span class="name-line">${esc(lead.name)}${sampleBadge(isSampleLead(lead))}</span></td><td>${dash(lead.source)}</td><td>${dash(lead.segment)}</td><td>${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}</td><td class="wrap">${dash(lead.next)}</td><td class="num">${dash(formatDate(lead.due))}</td><td>${dash(lead.owner)}</td><td class="num">${numericValue(lead.value) == null ? "—" : esc(formatMoney(numericValue(lead.value)))}</td><td>${leadActions(index)}</td></tr>`).join("")}</tbody></table></div>`;
+  panel.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Company</th><th>Source</th><th>Segment</th><th>Stage</th><th>Next action</th><th>Due</th><th>Owner</th><th>Value</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows.map(({ lead, index }) => `<tr><td><span class="name-line">${esc(lead.name)}${businessBadge(lead.business)}${sampleBadge(isSampleLead(lead))}</span></td><td>${dash(lead.source)}</td><td>${dash(lead.segment)}</td><td>${badge(knownClass(lead.stage, STAGE_IDS), stageLabel(lead.stage))}</td><td class="wrap">${dash(lead.next)}</td><td class="num">${dash(formatDate(lead.due))}</td><td>${dash(lead.owner)}</td><td class="num">${numericValue(lead.value) == null ? "—" : esc(formatMoney(numericValue(lead.value)))}</td><td>${leadActions(index)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function renderCustomerChips() {
   const filters = [{ id: "all", label: "All" }].concat(STATUSES);
@@ -793,11 +876,11 @@ function renderCustomers() {
   }
   if (isMobile()) {
     panel.classList.add("as-cards");
-    panel.innerHTML = `<div class="records">${rows.map(({ customer, index }) => `<article class="record"><div class="record-head"><h3 class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</h3>${badge(knownClass(customer.status, STATUS_IDS), statusLabel(customer.status))}</div><dl><div><dt>First value</dt><dd>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</dd></div><div><dt>Cadexus org ID</dt><dd class="mono">${dash(customer.orgId)}</dd></div><div><dt>Onboarding start</dt><dd class="num">${dash(formatDate(tsToISO(customer.startedAt)))}</dd></div><div><dt>Next action</dt><dd>${dash(customer.next)}</dd></div><div><dt>Due</dt><dd class="num">${dash(formatDate(customer.due))}</dd></div><div><dt>Owner</dt><dd>${dash(customer.owner)}</dd></div><div><dt>Expansion</dt><dd>${esc(expansionLabel(customer.expansion))}</dd></div><div><dt>Risks</dt><dd>${risksHtml(customer.risks)}</dd></div><div><dt>Verified outcome</dt><dd>${outcomeHtml(customer.outcome)}</dd></div></dl>${customerActions(index)}</article>`).join("")}</div>`;
+    panel.innerHTML = `<div class="records">${rows.map(({ customer, index }) => `<article class="record"><div class="record-head"><h3 class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</h3>${badge(knownClass(customer.status, STATUS_IDS), statusLabel(customer.status))}</div><dl><div><dt>Trade</dt><dd>${dash(customer.trade)}</dd></div><div><dt>Billing status</dt><dd>${dash(customer.billingStatus)}</dd></div><div><dt>First value</dt><dd>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</dd></div><div><dt>Cadexus org ID</dt><dd class="mono">${dash(customer.orgId)}</dd></div><div><dt>Onboarding start</dt><dd class="num">${dash(formatDate(tsToISO(customer.startedAt)))}</dd></div><div><dt>Next action</dt><dd>${dash(customer.next)}</dd></div><div><dt>Due</dt><dd class="num">${dash(formatDate(customer.due))}</dd></div><div><dt>Owner</dt><dd>${dash(customer.owner)}</dd></div><div><dt>Expansion</dt><dd>${esc(expansionLabel(customer.expansion))}</dd></div><div><dt>Risks</dt><dd>${risksHtml(customer.risks)}</dd></div><div><dt>Verified outcome</dt><dd>${outcomeHtml(customer.outcome)}</dd></div></dl>${customerActions(index)}</article>`).join("")}</div>`;
     return;
   }
   panel.classList.remove("as-cards");
-  panel.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Company</th><th>Status</th><th>First value</th><th>Org ID</th><th>Next action</th><th>Due</th><th>Owner</th><th>Risks</th><th>Verified outcome</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows.map(({ customer, index }) => `<tr><td><span class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</span></td><td>${badge(knownClass(customer.status, STATUS_IDS), statusLabel(customer.status))}</td><td>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</td><td class="mono">${dash(customer.orgId)}</td><td class="wrap">${dash(customer.next)}</td><td class="num">${dash(formatDate(customer.due))}</td><td>${dash(customer.owner)}</td><td class="wrap">${risksHtml(customer.risks)}</td><td class="wrap">${outcomeHtml(customer.outcome)}</td><td>${customerActions(index)}</td></tr>`).join("")}</tbody></table></div>`;
+  panel.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Company</th><th>Trade</th><th>Billing status</th><th>Status</th><th>First value</th><th>Org ID</th><th>Next action</th><th>Due</th><th>Owner</th><th>Risks</th><th>Verified outcome</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rows.map(({ customer, index }) => `<tr><td><span class="name-line">${esc(customer.name)}${sampleBadge(isSampleCustomer(customer))}</span></td><td>${dash(customer.trade)}</td><td>${dash(customer.billingStatus)}</td><td>${badge(knownClass(customer.status, STATUS_IDS), statusLabel(customer.status))}</td><td>${badge(customer.firstValue === "yes" ? "good" : "neutral", firstValueLabel(customer.firstValue))}</td><td class="mono">${dash(customer.orgId)}</td><td class="wrap">${dash(customer.next)}</td><td class="num">${dash(formatDate(customer.due))}</td><td>${dash(customer.owner)}</td><td class="wrap">${risksHtml(customer.risks)}</td><td class="wrap">${outcomeHtml(customer.outcome)}</td><td>${customerActions(index)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function renderNotes() {
   const notes = data.notes.slice().reverse();
@@ -823,7 +906,7 @@ function renderPlanItem(item) {
   const state = itemState(item.id);
   const statusOptions = PLAN_STATUSES.map(status => `<option value="${status.id}"${status.id === state.status ? " selected" : ""}>${esc(status.label)}</option>`).join("");
   const assignees = [["", "Unassigned"], ["partner", "Partner"], ["founder", "Founder"]].map(pair => `<option value="${pair[0]}"${pair[0] === state.assignee ? " selected" : ""}>${esc(pair[1])}</option>`).join("");
-  return `<article class="plan-item" id="plan-item-${esc(item.id)}"><div class="plan-top"><div class="checkline"><input type="checkbox" id="plan-check-${esc(item.id)}" data-plan="check" data-id="${esc(item.id)}" aria-label="Mark done" ${state.status === "done" ? "checked" : ""}><p class="what">${esc(item.what)}</p></div><div class="plan-controls"><select id="plan-status-${esc(item.id)}" data-plan="status" data-id="${esc(item.id)}" aria-label="Status">${statusOptions}</select><select id="plan-owner-${esc(item.id)}" data-plan="assignee" data-id="${esc(item.id)}" aria-label="Assignee">${assignees}</select></div></div><p class="kicker">Why</p><p>${esc(item.why)}</p><p class="kicker">Done when</p><p>${esc(item.doneWhen)}</p><label class="field"><span>Notes</span><textarea id="plan-notes-${esc(item.id)}" data-plan="notes" data-id="${esc(item.id)}">${esc(state.notes)}</textarea></label></article>`;
+  return `<article class="plan-item" id="plan-item-${esc(item.id)}"><div class="plan-top"><div class="checkline"><input type="checkbox" id="plan-check-${esc(item.id)}" data-plan="check" data-id="${esc(item.id)}" aria-label="Mark done" ${state.status === "done" ? "checked" : ""}><p class="what">${esc(item.what)} ${planBusinessBadge(item)}</p></div><div class="plan-controls"><select id="plan-status-${esc(item.id)}" data-plan="status" data-id="${esc(item.id)}" aria-label="Status">${statusOptions}</select><select id="plan-owner-${esc(item.id)}" data-plan="assignee" data-id="${esc(item.id)}" aria-label="Assignee">${assignees}</select></div></div><p class="kicker">Why</p><p>${esc(item.why)}</p><p class="kicker">Done when</p><p>${esc(item.doneWhen)}</p><label class="field"><span>Notes</span><textarea id="plan-notes-${esc(item.id)}" data-plan="notes" data-id="${esc(item.id)}">${esc(state.notes)}</textarea></label></article>`;
 }
 function renderMeasureRow(measure) {
   return `<tr><td><span class="name-line">${esc(measure.name)}</span><span class="cell-sub">${esc(measure.detail)}</span></td><td class="num" data-measure="${esc(measure.id)}">${measure.id === "hours" ? hoursInput() : esc(measureCurrent(measure.id))}</td><td>${targetInput(measure)}</td></tr>`;
@@ -1023,6 +1106,7 @@ function balanceShortText() {
 function render() {
   renderBanner();
   renderMetrics();
+  renderGrowthEngines();
   renderPlanCard();
   renderActionGroups();
   renderFunnel();
@@ -1146,6 +1230,7 @@ function editLead(index) {
   if (!lead) return;
   document.getElementById("l-edit-index").value = String(index);
   document.getElementById("l-name").value = lead.name || "";
+  setSelect("l-business", lead.business || (lead.source === "PlanDepa site" ? "plandepa" : "cadexus"));
   setSelect("l-source", lead.source);
   setSelect("l-segment", lead.segment);
   setSelect("l-stage", lead.stage);
@@ -1162,6 +1247,8 @@ function editCustomer(index) {
   if (!customer) return;
   document.getElementById("c-edit-index").value = String(index);
   document.getElementById("c-name").value = customer.name || "";
+  setSelect("c-trade", customer.trade || "");
+  setSelect("c-billing", customer.billingStatus || "");
   setSelect("c-status", customer.status);
   document.getElementById("c-org").value = customer.orgId || "";
   setSelect("c-value", customer.firstValue || "no");
@@ -1206,8 +1293,8 @@ function exportCSV(type) {
     return;
   }
   const cols = type === "leads"
-    ? [["Name", row => row.name], ["Source", row => row.source], ["Segment", row => row.segment], ["Stage", row => row.stage], ["Next", row => row.next], ["Notes", row => row.notes], ["Due", row => row.due], ["Owner", row => row.owner], ["Value", row => row.value]]
-    : [["Name", row => row.name], ["Status", row => row.status], ["FirstValue", row => row.firstValue], ["OrgID", row => row.orgId], ["Risks", row => row.risks], ["Outcome", row => row.outcome], ["Next", row => row.next], ["Due", row => row.due], ["Owner", row => row.owner], ["Started", row => row.startedAt ? tsToISO(row.startedAt) : ""], ["FirstValueDate", row => row.firstValueAt ? tsToISO(row.firstValueAt) : ""], ["Expansion", row => row.expansion || ""]];
+    ? [["Name", row => row.name], ["Business", row => row.business], ["Source", row => row.source], ["Segment", row => row.segment], ["Stage", row => row.stage], ["Next", row => row.next], ["Notes", row => row.notes], ["Due", row => row.due], ["Owner", row => row.owner], ["Value", row => row.value]]
+    : [["Name", row => row.name], ["Trade", row => row.trade], ["BillingStatus", row => row.billingStatus], ["Status", row => row.status], ["FirstValue", row => row.firstValue], ["OrgID", row => row.orgId], ["Risks", row => row.risks], ["Outcome", row => row.outcome], ["Next", row => row.next], ["Due", row => row.due], ["Owner", row => row.owner], ["Started", row => row.startedAt ? tsToISO(row.startedAt) : ""], ["FirstValueDate", row => row.firstValueAt ? tsToISO(row.firstValueAt) : ""], ["Expansion", row => row.expansion || ""]];
   const csv = [cols.map(col => col[0]).join(",")].concat(rows.map(row => cols.map(col => csvCell(col[1](row))).join(","))).join("\n");
   download(type + "-" + todayISO() + ".csv", csv, "text/csv");
 }
@@ -1247,9 +1334,9 @@ function onPlanInput(event) {
 }
 function seedSamples() {
   const now = Date.now();
-  const north = { id: uid(), name: "Northside Builders", source: "Referral", segment: "10–50 staff builder", stage: "demo", next: "Follow up Thursday — send Blueprint outline", notes: "Owner frustrated with quoting delays", sample: true, ts: now, createdAt: now };
-  const harbour = { id: uid(), name: "Harbour Trades", source: "Cadexus site", segment: "Trade contractor", stage: "qualified", next: "Book demo next week", notes: "Interested in site diary", sample: true, ts: now, createdAt: now };
-  const summit = { id: uid(), name: "Summit Construction", status: "onboarding", orgId: "org_abc123", firstValue: "no", risks: "Waiting on pricing library import", outcome: "", sample: true, ts: now, createdAt: now, startedAt: now };
+  const north = { id: uid(), name: "Northside Builders", business: "cadexus", source: "Referral", segment: "10–50 staff builder", stage: "demo", next: "Follow up Thursday — send Blueprint outline", notes: "Owner frustrated with quoting delays", sample: true, ts: now, createdAt: now };
+  const harbour = { id: uid(), name: "Harbour Trades", business: "cadexus", source: "Cadexus site", segment: "Trade contractor", stage: "qualified", next: "Book demo next week", notes: "Interested in site diary", sample: true, ts: now, createdAt: now };
+  const summit = { id: uid(), name: "Summit Construction", trade: "Builder", billingStatus: "trial", status: "onboarding", orgId: "org_abc123", firstValue: "no", risks: "Waiting on pricing library import", outcome: "", sample: true, ts: now, createdAt: now, startedAt: now };
   data.leads = [north, harbour];
   data.customers = [summit];
   data.activity = data.activity.concat([
@@ -1268,6 +1355,7 @@ document.getElementById("theme-toggle").addEventListener("click", () => {
   applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
 });
 document.getElementById("search-input").addEventListener("input", renderSearch);
+document.getElementById("business-filter").addEventListener("change", event => { businessFilter = event.target.value; stageFilter = "all"; pendingFocus = "#business-filter"; render(); });
 document.getElementById("plan").addEventListener("change", onPlanChange);
 document.getElementById("plan").addEventListener("input", onPlanInput);
 document.body.addEventListener("click", async event => {
@@ -1415,6 +1503,7 @@ document.getElementById("lead-form").addEventListener("submit", event => {
   const prev = idx !== "" && data.leads[idx] ? data.leads[idx] : {};
   const item = Object.assign({}, prev, {
     name,
+    business: document.getElementById("l-business").value,
     source: document.getElementById("l-source").value,
     segment: document.getElementById("l-segment").value,
     stage: document.getElementById("l-stage").value,
@@ -1462,6 +1551,8 @@ document.getElementById("customer-form").addEventListener("submit", event => {
   else if (outcome !== String(prev.outcome || "").trim()) outcomeAt = Date.now();
   const item = Object.assign({}, prev, {
     name,
+    trade: document.getElementById("c-trade").value,
+    billingStatus: document.getElementById("c-billing").value,
     status: nextStatus,
     orgId: document.getElementById("c-org").value.trim(),
     firstValue: nextValue,
