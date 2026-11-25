@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f6f9fc">
-<meta name="description" content="Cadexus Command Centre. Pipeline, customers, decisions and the 90 day plan.">
+<meta name="description" content="PlanDepa and Cadexus growth command centre. Leads, customers, decisions and a 90 day roadmap.">
 <title>Dashboard — Command Centre</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236e5424'/%3E%3Cpath d='M20.4 11.2a6.6 6.6 0 1 0 .05 9.6' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -169,6 +169,14 @@
   .dash-stack { display: flex; flex-direction: column; gap: var(--space-4); }
   .split { display: grid; grid-template-columns: 1fr; gap: var(--space-4); align-items: stretch; }
   .split > * { min-width: 0; }
+  .engine-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .engine-card { min-width: 0; padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-2); }
+  .engine-card h4 { font-size: 14px; font-weight: 600; }
+  .engine-card .sub { margin-top: 2px; font-size: 12px; }
+  .engine-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); margin-top: var(--space-2); }
+  .engine-stat { min-width: 0; padding: var(--space-1); border-radius: var(--radius); background: var(--surface); }
+  .engine-stat span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+  .engine-stat strong { display: block; margin-top: 2px; font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
   #plan-card { display: flex; min-width: 0; }
   #plan-card > .panel { flex: 1; }
   .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin: 0; }
@@ -399,6 +407,8 @@
   }
   @media (min-width: 1100px) {
     .split { grid-template-columns: 1fr 1fr; }
+    .engine-grid { grid-template-columns: 1fr; }
+    .engine-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
   @media (min-width: 1400px) {
     .metrics { grid-template-columns: repeat(7, minmax(0, 1fr)); }
@@ -540,6 +550,11 @@
         </div>
         <div class="dash-stack">
           <div class="metrics" id="metrics"></div>
+          <section class="panel" aria-labelledby="engines-heading">
+            <div class="panel-head"><h3 id="engines-heading">Growth engines</h3><span class="quiet">Live record counts</span></div>
+            <p class="panel-note">PlanDepa and Cadexus stay on separate growth paths. Counts use saved lead and customer records; example records are marked above.</p>
+            <div class="engine-grid" id="growth-engines"></div>
+          </section>
           <div class="split">
             <div id="plan-card"></div>
             <section class="panel" aria-labelledby="actions-heading">
@@ -602,6 +617,8 @@
           </div>
         </div>
         <div class="pipeline-tools" id="pipeline-tools">
+          <label class="sr-only" for="business-filter">Filter leads by business</label>
+          <select id="business-filter" aria-label="Filter leads by business"><option value="all">All businesses</option><option value="plandepa">PlanDepa</option><option value="cadexus">Cadexus</option><option value="unassigned">Needs assignment</option></select>
           <div class="chips" id="stage-chips" role="group" aria-label="Filter by stage"></div>
           <div class="segmented" role="group" aria-label="Pipeline layout">
             <button type="button" data-action="pipeline-view" data-mode="table" aria-pressed="true">Table</button>
@@ -651,6 +668,7 @@
         <div class="page-head">
           <div>
             <h2 id="plan-title" tabindex="-1">90 Day Plan</h2>
+            <p class="sub">Separate PlanDepa and Cadexus growth paths, connected through shared systems, measurement and customer proof.</p>
           </div>
         </div>
         <div id="plan-body"></div>
@@ -667,6 +685,7 @@
     <form id="lead-form" autocomplete="off">
       <input type="hidden" id="l-edit-index">
       <label class="field"><span>Company</span><input type="text" id="l-name" placeholder="Company or contact" required></label>
+      <label class="field"><span>Business</span><select id="l-business" required><option value="" selected disabled>Select a business</option><option value="cadexus">Cadexus</option><option value="plandepa">PlanDepa</option><option value="unassigned">Needs assignment</option></select></label>
       <div class="form-grid">
         <label class="field"><span>Source</span>
           <select id="l-source">
@@ -675,7 +694,7 @@
         </label>
         <label class="field"><span>Segment</span>
           <select id="l-segment">
-            <option>10–50 staff builder</option><option>Trade contractor</option><option>Small residential</option><option>Other</option>
+            <option>10–50 staff builder</option><option>Builder</option><option>Electrician</option><option>Plumber</option><option>Carpenter</option><option>Trade contractor</option><option>Small residential</option><option>Other trade</option><option>Other</option>
           </select>
         </label>
       </div>
@@ -708,6 +727,10 @@
     <form id="customer-form" autocomplete="off">
       <input type="hidden" id="c-edit-index">
       <label class="field"><span>Company</span><input type="text" id="c-name" placeholder="Company" required></label>
+      <div class="form-grid">
+        <label class="field"><span>Trade</span><select id="c-trade"><option value="">Not recorded</option><option>Builder</option><option>Electrician</option><option>Plumber</option><option>Carpenter</option><option>Other trade</option></select></label>
+        <label class="field"><span>Billing status</span><select id="c-billing"><option value="">Not recorded</option><option value="trial">Trial</option><option value="paid">Paid</option><option value="churned">Churned</option></select></label>
+      </div>
       <div class="form-grid">
         <label class="field"><span>Status</span>
           <select id="c-status"><option value="onboarding">Onboarding</option><option value="active">Active</option><option value="risk">At risk</option></select>
