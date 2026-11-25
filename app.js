@@ -19,7 +19,7 @@ const STATUSES = [
 const STAGE_IDS = new Set(STAGES.map(stage => stage.id));
 const STATUS_IDS = new Set(STATUSES.map(status => status.id));
 const FUNNEL_ORDER = { new: 0, qualified: 1, demo: 2, proposal: 3, won: 4 };
-const TITLES = { dashboard: "Dashboard", pipeline: "Pipeline", customers: "Customers", notes: "Decisions", plan: "90 Day Plan" };
+const TITLES = { dashboard: "Dashboard", pipeline: "Pipeline", customers: "Customers", notes: "Decisions", agents: "AI Agents", plan: "90 Day Plan" };
 const PLAN_PHASES = [
   { id: 1, name: "Foundation", range: "Days 1 to 30", start: 1, end: 30 },
   { id: 2, name: "Activation", range: "Days 31 to 60", start: 31, end: 60 },
@@ -1383,6 +1383,14 @@ document.body.addEventListener("click", async event => {
     document.getElementById("note-input").focus();
   } else if (action === "open-search") {
     openSearch();
+  } else if (action === "copy-agent-context") {
+    const context = document.getElementById("agent-context").textContent.trim();
+    try {
+      await navigator.clipboard.writeText(context);
+      toast("Business context copied.");
+    } catch (error) {
+      toast("Clipboard unavailable. Select the context text and copy it.");
+    }
   } else if (action === "close-modal") {
     closeDialog(button.dataset.modal);
   } else if (action === "edit-lead") {
