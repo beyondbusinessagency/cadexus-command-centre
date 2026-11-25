@@ -146,8 +146,8 @@
   .theme-toggle[aria-pressed="true"] .switch { background: var(--ink); }
   .theme-toggle[aria-pressed="true"] .knob { transform: translateX(16px); }
   [data-theme="dark"] .knob { background: #171716; }
-  .main { min-width: 0; overflow: auto; padding: var(--space-5) var(--space-4); }
-  .main > * { max-width: 1120px; margin-left: auto; margin-right: auto; }
+  .main { min-width: 0; overflow: auto; padding: var(--space-5) var(--space-4); display: flex; flex-direction: column; align-items: center; }
+  .main > * { width: 100%; max-width: 1120px; margin-left: auto; margin-right: auto; }
   .view { display: none; }
   .view.active { display: block; }
   .page-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-5); }
