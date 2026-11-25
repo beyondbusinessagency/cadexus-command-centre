@@ -493,16 +493,17 @@ function actionItems() {
   const items = [];
   data.leads.forEach((lead, index) => {
     if (lead.stage === "won" || lead.stage === "lost") return;
-    if (!String(lead.next || "").trim() || !parseISODate(lead.due)) return;
-    items.push({ kind: "lead", index, name: lead.name, next: lead.next, due: lead.due, owner: lead.owner || "", sample: isSampleLead(lead), stage: lead.stage });
+    if (!String(lead.next || "").trim()) return;
+    items.push({ kind: "lead", index, name: lead.name, business: lead.business || "unassigned", next: lead.next, due: lead.due || "", owner: lead.owner || "", sample: isSampleLead(lead), stage: lead.stage });
   });
   data.customers.forEach((customer, index) => {
-    if (!String(customer.next || "").trim() || !parseISODate(customer.due)) return;
-    items.push({ kind: "customer", index, name: customer.name, next: customer.next, due: customer.due, owner: customer.owner || "", sample: isSampleCustomer(customer), status: customer.status });
+    if (!String(customer.next || "").trim()) return;
+    items.push({ kind: "customer", index, name: customer.name, business: "cadexus", next: customer.next, due: customer.due || "", owner: customer.owner || "", sample: isSampleCustomer(customer), status: customer.status });
   });
   return items;
 }
 function actionBucket(due) {
+  if (!parseISODate(due)) return "unscheduled";
   const today = todayISO();
   if (due < today) return "overdue";
   if (due === today) return "today";
@@ -638,7 +639,8 @@ function renderActionGroups() {
   const groups = [
     { id: "overdue", label: "Overdue", copy: "No next actions are overdue." },
     { id: "today", label: "Today", copy: "No next actions are due today." },
-    { id: "week", label: "This week", copy: "No next actions are due this week." }
+    { id: "week", label: "This week", copy: "No next actions are due this week." },
+    { id: "unscheduled", label: "Needs a date", copy: "Add a due date to schedule a saved follow-up." }
   ];
   const later = items.filter(item => actionBucket(item.due) === "later").length;
   const groupsHtml = groups.map(group => {
@@ -651,11 +653,11 @@ function renderActionGroups() {
 }
 function actionRow(item) {
   const action = item.kind === "lead" ? "edit-lead" : "edit-customer";
-  const meta = ["Due " + formatDate(item.due), item.owner].filter(Boolean).join(" · ");
+  const meta = ["Due " + (parseISODate(item.due) ? formatDate(item.due) : "date needed"), item.owner || "Owner needed"].join(" · ");
   const flag = item.kind === "lead"
     ? badge(knownClass(item.stage, STAGE_IDS), stageLabel(item.stage))
     : badge(knownClass(item.status, STATUS_IDS), statusLabel(item.status));
-  return `<button type="button" class="action" data-action="${action}" data-index="${item.index}"><span class="action-body"><span class="name-line"><span class="action-name">${esc(item.name)}</span>${sampleBadge(item.sample)}</span><span class="action-next">${esc(item.next)}</span><span class="quiet${item.due < todayISO() ? " overdue" : ""}">${esc(meta)}</span></span><span class="action-meta">${flag}</span></button>`;
+  return `<button type="button" class="action" data-action="${action}" data-index="${item.index}"><span class="action-body"><span class="name-line"><span class="action-name">${esc(item.name)}</span>${sampleBadge(item.sample)}</span><span class="action-next">${esc(item.next)}</span><span class="quiet">${businessBadge(item.business)}</span><span class="quiet${parseISODate(item.due) && item.due < todayISO() ? " overdue" : ""}">${esc(meta)}</span></span><span class="action-meta">${flag}</span></button>`;
 }
 function renderFunnel() {
   const anyValue = data.leads.some(lead => numericValue(lead.value) != null);
