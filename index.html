@@ -173,6 +173,15 @@
   .engine-card { min-width: 0; padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-2); }
   .engine-card h4 { font-size: 14px; font-weight: 600; }
   .engine-card .sub { margin-top: 2px; font-size: 12px; }
+  .connector-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+  .connector-card { display: flex; flex-direction: column; gap: var(--space-2); }
+  .connector-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-1); }
+  .connector-head h3 { font-size: 15px; font-weight: 600; }
+  .connector-links { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: auto; }
+  .connector-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+  .connector-step { padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+  .connector-step strong { display: block; margin-bottom: 4px; }
+  .agent-context { padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.55 var(--font); }
   .engine-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-1); margin-top: var(--space-2); }
   .engine-stat { min-width: 0; padding: var(--space-1); border-radius: var(--radius); background: var(--surface); }
   .engine-stat span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
@@ -425,11 +434,12 @@
     .sidebar-foot { display: contents; }
     .theme-toggle { grid-area: theme; width: auto; justify-self: end; margin: 0; }
     .footnote { display: none; }
-    nav { grid-area: nav; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; padding: var(--space-1) 0 var(--space-2); gap: var(--space-1); }
+    nav { grid-area: nav; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: visible; padding: var(--space-1) 0 var(--space-2); gap: var(--space-1); }
     .nav-btn.active { box-shadow: inset 0 -2px 0 var(--accent); }
     .nav-btn { width: 100%; height: auto; min-height: 48px; flex-direction: column; justify-content: center; gap: var(--space-1); padding: var(--space-1) 0; font-size: 11px; font-weight: 500; line-height: 16px; white-space: normal; text-align: center; hyphens: none; }
     .main { overflow: visible; padding: var(--space-2); }
     .engine-grid { grid-template-columns: 1fr; }
+    .connector-grid, .connector-steps { grid-template-columns: 1fr; }
     .engine-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     h2, h3 { scroll-margin-top: 128px; }
     .page-head, .banner, .panel-head, .record-head, .start-row, .week-top { flex-direction: column; align-items: center; text-align: center; }
@@ -512,6 +522,10 @@
         <button type="button" class="nav-btn" data-view="notes">
           <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="1.75" width="10" height="12.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.75 5.5h4.5M5.75 8h4.5M5.75 10.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Decisions
+        </button>
+        <button type="button" class="nav-btn" data-view="agents">
+          <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.75v2.1M8 12.15v2.1M1.75 8h2.1M12.15 8h2.1M3.58 3.58l1.48 1.48M10.94 10.94l1.48 1.48M12.42 3.58l-1.48 1.48M5.06 10.94l-1.48 1.48" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+          AI + MCP
         </button>
         </nav>
       <div class="sidebar-foot">
@@ -659,6 +673,75 @@
             </div>
           </form>
           <div class="notes-list" id="notes-list"></div>
+        </div>
+      </section>
+      <section class="view" id="agents" aria-labelledby="agents-title">
+        <div class="page-head">
+          <div>
+            <h2 id="agents-title" tabindex="-1">AI agents &amp; MCP</h2>
+            <p class="sub">Connect ChatGPT, Grok and Claude to the Command Centre through one authenticated MCP server.</p>
+          </div>
+        </div>
+        <div class="banner">
+          <p><span class="badge neutral">Bridge not live</span><span>This Command Centre currently saves records in this browser. AI agents cannot read these records until a shared backend and MCP server are connected.</span></p>
+        </div>
+        <div class="dash-stack">
+          <section class="panel">
+            <div class="panel-head"><h3>Connection status</h3><span class="badge neutral">Not connected</span></div>
+            <p class="panel-note">A single remote MCP server can provide authenticated access to approved Command Centre tools. The server endpoint will appear here once the shared backend is deployed.</p>
+            <dl>
+              <div><dt>MCP endpoint</dt><dd class="mono">Not deployed</dd></div>
+              <div><dt>Initial access scope</dt><dd>Read-only dashboard summary, leads, customers and next actions</dd></div>
+            </dl>
+            <p class="quiet">Write access should be added only for specific actions and with approval controls.</p>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>AI connections</h3><span class="quiet">Ready when the MCP bridge is live</span></div>
+            <div class="connector-grid">
+              <article class="engine-card connector-card">
+                <div class="connector-head"><h3>ChatGPT</h3><span class="badge neutral">Not connected</span></div>
+                <p class="sub">Add a custom MCP server in ChatGPT and install it in the workspace.</p>
+                <div class="connector-links">
+                  <a class="btn secondary" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Open ChatGPT</a>
+                  <a class="btn ghost" href="https://developers.openai.com/api/docs/guides/custom-mcp-server" target="_blank" rel="noopener noreferrer">Setup guide</a>
+                </div>
+              </article>
+              <article class="engine-card connector-card">
+                <div class="connector-head"><h3>Grok</h3><span class="badge neutral">Not connected</span></div>
+                <p class="sub">Add the MCP endpoint as a custom connector in Grok.</p>
+                <div class="connector-links">
+                  <a class="btn secondary" href="https://grok.com/" target="_blank" rel="noopener noreferrer">Open Grok</a>
+                  <a class="btn ghost" href="https://docs.x.ai/grok/connectors" target="_blank" rel="noopener noreferrer">Setup guide</a>
+                </div>
+              </article>
+              <article class="engine-card connector-card">
+                <div class="connector-head"><h3>Claude</h3><span class="badge neutral">Not connected</span></div>
+                <p class="sub">Add the remote MCP endpoint under Claude’s custom connectors.</p>
+                <div class="connector-links">
+                  <a class="btn secondary" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Open Claude</a>
+                  <a class="btn ghost" href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp" target="_blank" rel="noopener noreferrer">Setup guide</a>
+                </div>
+              </article>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>Business context</h3><button type="button" class="btn secondary" data-action="copy-agent-context">Copy context</button></div>
+            <p class="panel-note">Use this while the shared MCP bridge is being prepared. It does not include live dashboard records.</p>
+            <div id="agent-context" class="agent-context">You are supporting Cadexus and PlanDepa. Keep their offers and growth paths distinct while identifying useful shared systems.
+
+PlanDepa: move from diagnostics to a Clarity Blueprint and implementation.
+Cadexus: support trade demos, 14-day onboarding, activation and customer value.
+
+Be evidence-led. Separate sample data from verified results. Give practical next actions with an owner and due date when known. Do not claim access to Command Centre records unless the MCP connector is enabled.</div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>How the connection works</h3></div>
+            <div class="connector-steps">
+              <div class="connector-step"><strong>1. Shared backend</strong><span class="quiet">Move business records from this browser into a secure database.</span></div>
+              <div class="connector-step"><strong>2. Authenticated MCP server</strong><span class="quiet">Expose limited, read-only tools through a protected Vercel endpoint.</span></div>
+              <div class="connector-step"><strong>3. Connect each agent</strong><span class="quiet">Add the same server URL in ChatGPT, Grok and Claude and grant approved access.</span></div>
+            </div>
+          </section>
         </div>
       </section>
       <section class="view" id="plan" aria-labelledby="plan-title" hidden>
