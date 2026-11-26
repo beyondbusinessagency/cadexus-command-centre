@@ -107,9 +107,109 @@ function uid() {
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 }
+let authClient = null;
+let cloudSession = null;
+let cloudSyncTimer = 0;
+let cloudSyncBusy = false;
+let cloudHydrating = false;
+function cloudStatus(text) {
+  const el = document.getElementById("cloud-status");
+  if (el) el.textContent = text;
+}
+function scheduleCloudSync() {
+  if (!cloudSession || cloudHydrating) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(syncCloud, 700);
+}
+async function syncCloud() {
+  if (!cloudSession || cloudSyncBusy) return;
+  cloudSyncBusy = true;
+  cloudStatus("Saving shared records…");
+  try {
+    const response = await fetch("/api/data", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + cloudSession.access_token },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Sync failed");
+    cloudStatus("Shared and up to date");
+  } catch (error) {
+    cloudStatus(error.message || "Shared sync unavailable");
+  } finally {
+    cloudSyncBusy = false;
+  }
+}
+function mergeCloudRecords(remote, local) {
+  const records = new Map();
+  (Array.isArray(remote) ? remote : []).forEach(item => { if (item && item.id) records.set(item.id, item); });
+  (Array.isArray(local) ? local : []).filter(item => item && item.sample !== true).forEach(item => {
+    const previous = records.get(item.id);
+    if (!previous || Number(item.ts || item.updatedAt || 0) >= Number(previous.ts || previous.updatedAt || 0)) records.set(item.id, item);
+  });
+  return Array.from(records.values());
+}
+async function hydrateCloud() {
+  if (!cloudSession || cloudHydrating) return;
+  cloudHydrating = true;
+  cloudStatus("Loading shared records…");
+  try {
+    const response = await fetch("/api/data", { headers: { Authorization: "Bearer " + cloudSession.access_token } });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not load shared data");
+    if (result.data) {
+      const local = data;
+      data = migrate({
+        ...result.data,
+        ...local,
+        leads: mergeCloudRecords(result.data.leads, local.leads),
+        customers: mergeCloudRecords(result.data.customers, local.customers),
+        notes: mergeCloudRecords(result.data.notes, local.notes),
+        activity: mergeCloudRecords(result.data.activity, local.activity),
+        plan: Object.keys(local.plan || {}).some(key => local.plan[key]) ? local.plan : (result.data.plan || local.plan)
+      });
+      persist(true);
+      render();
+      cloudStatus("Shared and up to date");
+      scheduleCloudSync();
+    } else {
+      cloudStatus("Saving this browser’s records to your account…");
+      await syncCloud();
+    }
+  } catch (error) {
+    cloudStatus(error.message || "Shared sync unavailable");
+  } finally {
+    cloudHydrating = false;
+  }
+}
+function setupCloudSync() {
+  if (!window.supabase || !window.supabase.createClient) {
+    cloudStatus("Sign-in service unavailable");
+    return;
+  }
+  authClient = window.supabase.createClient("https://sfsngquxpyaytxnddzdz.supabase.co", "sb_publishable_WfRb4S185FCf24L2OUAWVA_Xom4hJ69", {
+    auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true }
+  });
+  authClient.auth.onAuthStateChange((event, session) => {
+    cloudSession = session;
+    const form = document.getElementById("cloud-login-form");
+    const signOut = document.getElementById("cloud-signout");
+    if (form) form.hidden = !!session;
+    if (signOut) signOut.hidden = !session;
+    if (session) {
+      cloudStatus("Signed in as " + (session.user.email || "your account"));
+      setTimeout(hydrateCloud, 0);
+    } else cloudStatus("Sign in to share records with your AI agents");
+  });
+  authClient.auth.getSession().then(({ data }) => {
+    cloudSession = data.session;
+    if (data.session) hydrateCloud();
+  });
+}
 function persist(silent) {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
+    scheduleCloudSync();
     return true;
   } catch (e) {
     if (!silent) toast("Could not save in this browser.");
@@ -1648,3 +1748,15 @@ if (!dismissed && !data.leads.length && !data.customers.length) {
 window.matchMedia("(max-width: 800px)").addEventListener("change", () => render());
 window.addEventListener("resize", scheduleBalance);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => balanceShortText());
+setupCloudSync();
+const cloudLoginForm = document.getElementById("cloud-login-form");
+if (cloudLoginForm) cloudLoginForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!authClient) return cloudStatus("Sign-in service unavailable");
+  const email = document.getElementById("cloud-email").value.trim();
+  cloudStatus("Sending a secure sign-in link…");
+  const { error } = await authClient.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname + "?view=agents" } });
+  cloudStatus(error ? error.message : "Check your email for the secure sign-in link.");
+});
+const cloudSignOut = document.getElementById("cloud-signout");
+if (cloudSignOut) cloudSignOut.addEventListener("click", () => authClient && authClient.auth.signOut());
