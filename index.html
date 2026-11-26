@@ -683,20 +683,30 @@
           </div>
         </div>
         <div class="banner">
-          <p><span class="badge neutral">Bridge not live</span><span>This Command Centre currently saves records in this browser. AI agents cannot read these records until a shared backend and MCP server are connected.</span></p>
+          <p><span class="badge neutral">OAuth setup required</span><span>The read-only MCP bridge is deployed. Sign in below to sync records. Supabase OAuth 2.1 and dynamic client registration must be enabled before ChatGPT, Grok or Claude can authorize.</span></p>
         </div>
         <div class="dash-stack">
           <section class="panel">
-            <div class="panel-head"><h3>Connection status</h3><span class="badge neutral">Not connected</span></div>
-            <p class="panel-note">A single remote MCP server can provide authenticated access to approved Command Centre tools. The server endpoint will appear here once the shared backend is deployed.</p>
+            <div class="panel-head"><h3>Connection status</h3><span class="badge neutral">Read only</span></div>
+            <p class="panel-note">One authenticated MCP connection can serve ChatGPT, Grok and Claude. Each agent must be connected and approved separately.</p>
             <dl>
-              <div><dt>MCP endpoint</dt><dd class="mono">Not deployed</dd></div>
-              <div><dt>Initial access scope</dt><dd>Read-only dashboard summary, leads, customers and next actions</dd></div>
+              <div><dt>MCP endpoint</dt><dd class="mono">https://cadexus-command-centre-beyond-business.vercel.app/api/mcp</dd></div>
+              <div><dt>Available tools</dt><dd>Dashboard summary, leads, customers and next actions</dd></div>
             </dl>
-            <p class="quiet">Write access should be added only for specific actions and with approval controls.</p>
+            <p class="quiet">The bridge cannot create, edit or delete records. Supabase OAuth 2.1 and dynamic client registration are still required.</p>
+            <p><a class="btn ghost" href="https://supabase.com/dashboard/project/sfsngquxpyaytxnddzdz/auth/oauth-server" target="_blank" rel="noopener noreferrer">Open Supabase OAuth settings</a></p>
           </section>
           <section class="panel">
-            <div class="panel-head"><h3>AI connections</h3><span class="quiet">Ready when the MCP bridge is live</span></div>
+            <div class="panel-head"><h3>Shared records</h3><span class="quiet" id="cloud-status">Sign in to share records with your AI agents</span></div>
+            <p class="panel-note">Signing in saves your dashboard to your account so approved AI agents can read the same current records. Existing browser records are merged into the account on first sign-in.</p>
+            <form id="cloud-login-form">
+              <label class="field"><span>Account email</span><input id="cloud-email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+              <div class="composer-actions"><button class="btn primary" type="submit">Send secure sign-in link</button></div>
+            </form>
+            <button class="btn secondary" id="cloud-signout" type="button" hidden>Sign out</button>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>AI connections</h3><span class="quiet">Connect after OAuth is enabled</span></div>
             <div class="connector-grid">
               <article class="engine-card connector-card">
                 <div class="connector-head"><h3>ChatGPT</h3><span class="badge neutral">Not connected</span></div>
@@ -726,13 +736,13 @@
           </section>
           <section class="panel">
             <div class="panel-head"><h3>Business context</h3><button type="button" class="btn secondary" data-action="copy-agent-context">Copy context</button></div>
-            <p class="panel-note">Use this while the shared MCP bridge is being prepared. It does not include live dashboard records.</p>
+            <p class="panel-note">Copy this business context alongside your live MCP data when useful.</p>
             <div id="agent-context" class="agent-context">You are supporting Cadexus and PlanDepa. Keep their offers and growth paths distinct while identifying useful shared systems.
 
 PlanDepa: move from diagnostics to a Clarity Blueprint and implementation.
 Cadexus: support trade demos, 14-day onboarding, activation and customer value.
 
-Be evidence-led. Separate sample data from verified results. Give practical next actions with an owner and due date when known. Do not claim access to Command Centre records unless the MCP connector is enabled.</div>
+Be evidence-led. Separate sample data from verified results. Give practical next actions with an owner and due date when known. Treat sample records as examples and verified results as customer-approved only.</div>
           </section>
           <section class="panel">
             <div class="panel-head"><h3>How the connection works</h3></div>
@@ -869,6 +879,7 @@ Be evidence-led. Separate sample data from verified results. Give practical next
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 </body>
 </html>
